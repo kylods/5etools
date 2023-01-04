@@ -152,6 +152,7 @@ class ItemsPage extends ListPage {
 	constructor () {
 		super({
 			dataSource: DataUtil.item.loadJSON.bind(DataUtil.item),
+			prereleaseDataSource: DataUtil.item.loadPrerelease.bind(DataUtil.item),
 			brewDataSource: DataUtil.item.loadBrew.bind(DataUtil.item),
 
 			pFnGetFluff: Renderer.item.pGetFluff.bind(Renderer.item),
@@ -164,7 +165,7 @@ class ItemsPage extends ListPage {
 				$btnOpen: $(`#btn-book`),
 				$eleNoneVisible: $(`<span class="initial-message">If you wish to view multiple items, please first make a list</span>`),
 				pageTitle: "Items Book View",
-				fnGetMd: it => RendererMarkdown.get().render({type: "dataItem", dataItem: it}).trim(),
+				fnGetMd: it => RendererMarkdown.get().render({entries: [{type: "statblockInline", dataType: "item", data: it}]}),
 			},
 
 			tableViewOptions: {
@@ -188,6 +189,14 @@ class ItemsPage extends ListPage {
 
 		this._mundaneList = null;
 		this._magicList = null;
+	}
+
+	get _bindOtherButtonsOptions () {
+		return {
+			other: [
+				this._bindOtherButtonsOptions_openAsSinglePage({slugPage: "items", fnGetHash: () => Hist.getHashParts()[0]}),
+			].filter(Boolean),
+		};
 	}
 
 	get primaryLists () { return [this._mundaneList, this._magicList]; }
@@ -223,7 +232,7 @@ class ItemsPage extends ListPage {
 							e_({
 								tag: "span",
 								clazz: `col-1 text-center ${Parser.sourceJsonToColor(item.source)} pr-0`,
-								style: BrewUtil2.sourceJsonToStylePart(item.source),
+								style: Parser.sourceJsonToStylePart(item.source),
 								title: `${Parser.sourceJsonToFull(item.source)}${Renderer.utils.getSourceSubText(item)}`,
 								text: source,
 							}),
@@ -269,7 +278,7 @@ class ItemsPage extends ListPage {
 							e_({
 								tag: "span",
 								clazz: `col-1 text-center ${Parser.sourceJsonToColor(item.source)} pr-0`,
-								style: BrewUtil2.sourceJsonToStylePart(item.source),
+								style: Parser.sourceJsonToStylePart(item.source),
 								title: `${Parser.sourceJsonToFull(item.source)}${Renderer.utils.getSourceSubText(item)}`,
 								text: source,
 							}),
@@ -366,7 +375,7 @@ class ItemsPage extends ListPage {
 			$btnClear,
 			dispPageTagline: document.getElementById(`page__subtitle`),
 			$wrpList: $(`.list.mundane`),
-			syntax: this._listSyntax,
+			syntax: this._listSyntax.build(),
 			isBindFindHotkey: true,
 			optsList: {
 				fnSort: PageFilterItems.sortItems,
@@ -377,7 +386,7 @@ class ItemsPage extends ListPage {
 			$btnReset,
 			$btnClear,
 			$wrpList: $(`.list.magic`),
-			syntax: this._listSyntax,
+			syntax: this._listSyntax.build(),
 			optsList: {
 				fnSort: PageFilterItems.sortItems,
 			},

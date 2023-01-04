@@ -38,17 +38,21 @@ class VehiclesSublistManager extends SublistManager {
 class VehiclesPage extends ListPage {
 	constructor () {
 		const pageFilter = new PageFilterVehicles();
+		const pFnGetFluff = Renderer.vehicle.pGetFluff.bind(Renderer.vehicle);
+
 		super({
 			dataSource: "data/vehicles.json",
 			dataSourceFluff: "data/fluff-vehicles.json",
 
-			pFnGetFluff: Renderer.vehicle.pGetFluff.bind(Renderer.vehicle),
+			pFnGetFluff,
 
 			pageFilter,
 
 			listClass: "vehicles",
 
 			dataProps: ["vehicle", "vehicleUpgrade"],
+
+			listSyntax: new ListSyntaxVehicles({fnGetDataList: () => this._dataList, pFnGetFluff}),
 		});
 	}
 
@@ -65,7 +69,7 @@ class VehiclesPage extends ListPage {
 		eleLi.innerHTML = `<a href="#${UrlUtil.autoEncodeHash(it)}" class="lst--border lst__row-inner">
 			<span class="col-6 pl-0 text-center">${displayType}</span>
 			<span class="bold col-4">${it.name}</span>
-			<span class="col-2 text-center ${Parser.sourceJsonToColor(it.source)} pr-0" title="${Parser.sourceJsonToFull(it.source)}" ${BrewUtil2.sourceJsonToStyle(it.source)}>${source}</span>
+			<span class="col-2 text-center ${Parser.sourceJsonToColor(it.source)} pr-0" title="${Parser.sourceJsonToFull(it.source)}" ${Parser.sourceJsonToStyle(it.source)}>${source}</span>
 		</a>`;
 
 		const listItem = new ListItem(
@@ -153,27 +157,7 @@ class VehiclesPage extends ListPage {
 
 		this._updateSelected();
 	}
-
-	_getSearchCacheStats (entity) {
-		if (this.constructor._INDEXABLE_PROPS.every(it => !entity[it])) return "";
-		const ptrOut = {_: ""};
-		this.constructor._INDEXABLE_PROPS.forEach(it => this._getSearchCache_handleEntryProp(entity, it, ptrOut));
-		return ptrOut._;
-	}
 }
-VehiclesPage._INDEXABLE_PROPS = [
-	"control",
-	"movement",
-	"weapon",
-	"other",
-	"entries",
-
-	"actionStation",
-
-	"action",
-	"trait",
-	"reaction",
-];
 
 const vehiclesPage = new VehiclesPage();
 vehiclesPage.sublistManager = new VehiclesSublistManager();

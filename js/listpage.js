@@ -373,7 +373,7 @@ class SublistManager {
 
 	async _pHandleJsonDownload () {
 		const entities = await this.getPinnedEntities();
-		entities.forEach(ent => DataUtil.cleanJson(MiscUtil.copy(ent)));
+		entities.forEach(ent => DataUtil.cleanJson(MiscUtil.copyFast(ent)));
 		DataUtil.userDownload(`${this._getDownloadName()}-data`, entities);
 	}
 
@@ -654,7 +654,7 @@ class SublistManager {
 		const page = UrlUtil.getCurrentPage();
 
 		for (const it of list.items) {
-			let toSend = await Renderer.hover.pCacheAndGetHash(page, it.h);
+			let toSend = await DataLoader.pCacheAndGetHash(page, it.h);
 
 			toSend = await Renderer.hover.pApplyCustomHashId(UrlUtil.getCurrentPage(), toSend, it.customHashId);
 
@@ -720,10 +720,82 @@ class SublistManager {
 	doSublistDeselectAll () { this._listSub.deselectAll(); }
 }
 
+class ListPageSettingsManager extends BaseComponent {
+	static _SETTINGS = [];
+	static _STORAGE_KEY = "listPageSettings";
+
+	async pInit () {
+		const saved = await this._pLoadSettings();
+		if (!saved) return;
+		this.setStateFrom(saved);
+	}
+
+	async _pLoadSettings () { return StorageUtil.pGetForPage(this.constructor._STORAGE_KEY); }
+
+	async _pSaveSettings () {
+		await StorageUtil.pSetForPage(this.constructor._STORAGE_KEY, this.getSaveableState());
+	}
+
+	_getSettings () { return {}; }
+
+	bindBtnOpen ({btn}) {
+		btn
+			.addEventListener(
+				"click",
+				() => {
+					const $btnReset = $(`<button class="btn btn-default btn-xs" title="Reset"><span class="glyphicon glyphicon-refresh"></span></button>`)
+						.click(() => {
+							this._proxyAssignSimple("state", this._getDefaultState(), true);
+							this._pSaveSettings()
+								.then(() => Hist.hashChange());
+						});
+
+					const {$modalInner} = UiUtil.getShowModal({
+						isIndestructible: true,
+						isHeaderBorder: true,
+						title: "Settings",
+						cbClose: () => {
+							this._pSaveSettings()
+								.then(() => Hist.hashChange());
+						},
+						$titleSplit: $btnReset,
+					});
+
+					const $rows = Object.entries(this._getSettings())
+						.map(([prop, setting]) => {
+							switch (setting.type) {
+								case "boolean": {
+									return $$`<label class="split-v-center stripe-even py-1">
+										<span>${setting.name}</span>
+										${ComponentUiUtil.$getCbBool(this, prop)}
+									</label>`;
+								}
+
+								default: throw new Error(`Unhandled type "${setting.type}"`);
+							}
+						});
+
+					$$($modalInner)`<div class="ve-flex-col">
+						${$rows}
+					</div>`;
+				},
+			);
+	}
+
+	getValues () {
+		return MiscUtil.copyFast(this.__state);
+	}
+
+	_getDefaultState () {
+		return SettingsUtil.getDefaultSettings(this._getSettings());
+	}
+}
+
 class ListPage {
 	/**
 	 * @param opts Options object.
 	 * @param opts.dataSource Main JSON data url or function to fetch main data.
+	 * @param [opts.prereleaseDataSource] Function to fetch prerelease data.
 	 * @param [opts.brewDataSource] Function to fetch brew data.
 	 * @param [opts.pFnGetFluff] Function to fetch fluff for a given entity.
 	 * @param [opts.dataSourceFluff] Fluff JSON data url or function to fetch fluff data.
@@ -746,14 +818,16 @@ class ListPage {
 	 * @param [opts.tableViewOptions] Table view options.
 	 * @param [opts.hasAudio] True if the entities have pronunciation audio.
 	 * @param [opts.isPreviewable] True if the entities can be previewed in-line as part of the list.
-	 * @param [opts.bindOtherButtonsOptions]
 	 * @param [opts.isLoadDataAfterFilterInit] If the order of data loading and filter-state loading should be flipped.
 	 * @param [opts.isBindHashHandlerUnknown] If the "unknown hash" handler function should be bound.
 	 * @param [opts.isMarkdownPopout] If the sublist Popout button supports Markdown on CTRL.
 	 * @param [opts.propEntryData]
+	 * @param [opts.listSyntax]
+	 * @param [opts.compSettings]
 	 */
 	constructor (opts) {
 		this._dataSource = opts.dataSource;
+		this._prereleaseDataSource = opts.prereleaseDataSource;
 		this._brewDataSource = opts.brewDataSource;
 		this._pFnGetFluff = opts.pFnGetFluff;
 		this._dataSourcefluff = opts.dataSourceFluff;
@@ -768,10 +842,11 @@ class ListPage {
 		this._hasAudio = opts.hasAudio;
 		this._isPreviewable = opts.isPreviewable;
 		this._isMarkdownPopout = !!opts.isMarkdownPopout;
-		this._bindOtherButtonsOptions = opts.bindOtherButtonsOptions;
 		this._isLoadDataAfterFilterInit = !!opts.isLoadDataAfterFilterInit;
 		this._isBindHashHandlerUnknown = !!opts.isBindHashHandlerUnknown;
 		this._propEntryData = opts.propEntryData;
+		this._listSyntax = opts.listSyntax || new ListUiUtil.ListSyntax({fnGetDataList: () => this._dataList, pFnGetFluff: opts.pFnGetFluff});
+		this._compSettings = opts.compSettings ? opts.compSettings : null;
 
 		this._renderer = Renderer.get();
 		this._list = null;
@@ -803,8 +878,16 @@ class ListPage {
 
 		this._$pgContent = $(`#pagecontent`);
 
-		await BrewUtil2.pInit();
+		await Promise.all([
+			PrereleaseUtil.pInit(),
+			BrewUtil2.pInit(),
+		]);
 		await ExcludeUtil.pInitialise();
+
+		if (this._compSettings) {
+			await this._compSettings.pInit();
+			this._compSettings.bindBtnOpen({btn: document.getElementById("btn-list-settings")});
+		}
 
 		let data;
 		// For pages which can load data without filter state, load the data early
@@ -879,7 +962,7 @@ class ListPage {
 			$btnClear: $(`#lst__search-glass`),
 			dispPageTagline: document.getElementById(`page__subtitle`),
 			isPreviewable: this._isPreviewable,
-			syntax: this._listSyntax,
+			syntax: this._listSyntax.build(),
 			isBindFindHotkey: true,
 			optsList: this._listOptions,
 		});
@@ -922,9 +1005,10 @@ class ListPage {
 
 	async _pOnLoad_pGetData () {
 		const data = await (typeof this._dataSource === "string" ? DataUtil.loadJSON(this._dataSource) : this._dataSource());
+		const prerelease = await (this._prereleaseDataSource ? this._prereleaseDataSource() : PrereleaseUtil.pGetBrewProcessed());
 		const homebrew = await (this._brewDataSource ? this._brewDataSource() : BrewUtil2.pGetBrewProcessed());
 
-		return BrewUtil2.getMergedData(data, homebrew);
+		return BrewUtil2.getMergedData(PrereleaseUtil.getMergedData(data, prerelease), homebrew);
 	}
 
 	_pOnLoad_bookView () {
@@ -1069,6 +1153,18 @@ class ListPage {
 		});
 	}
 
+	/* Implement as required */
+	get _bindOtherButtonsOptions () { return null; }
+
+	_bindOtherButtonsOptions_openAsSinglePage ({slugPage, fnGetHash}) {
+		if (!IS_DEPLOYED) return null;
+		return {
+			name: "Open Page",
+			type: "link",
+			fn: () => `${location.origin}/${slugPage}/${UrlUtil.getSluggedHash(fnGetHash())}`,
+		};
+	}
+
 	_addListItem (listItem) {
 		this._list.addItem(listItem);
 	}
@@ -1137,85 +1233,6 @@ class ListPage {
 
 	// ==================
 
-	get _listSyntax () {
-		return {
-			stats: {
-				help: `"stats:<text>" to search within stat blocks.`,
-				fn: (listItem, searchTerm) => {
-					if (listItem.data._textCacheStats == null) listItem.data._textCacheStats = this._getSearchCacheStats(this._dataList[listItem.ix]);
-					return this._listSyntax_isTextMatch(listItem.data._textCacheStats, searchTerm);
-				},
-			},
-			info: {
-				help: `"info:<text>" to search within info.`,
-				fn: async (listItem, searchTerm) => {
-					if (listItem.data._textCacheFluff == null) listItem.data._textCacheFluff = await this._pGetSearchCacheFluff(this._dataList[listItem.ix]);
-					return this._listSyntax_isTextMatch(listItem.data._textCacheFluff, searchTerm);
-				},
-				isAsync: true,
-			},
-			text: {
-				help: `"text:<text>" to search within stat blocks plus info.`,
-				fn: async (listItem, searchTerm) => {
-					if (listItem.data._textCacheAll == null) {
-						const {textCacheStats, textCacheFluff, textCacheAll} = await this._pGetSearchCacheAll(this._dataList[listItem.ix], {textCacheStats: listItem.data._textCacheStats, textCacheFluff: listItem.data._textCacheFluff});
-						listItem.data._textCacheStats = listItem.data._textCacheStats || textCacheStats;
-						listItem.data._textCacheFluff = listItem.data._textCacheFluff || textCacheFluff;
-						listItem.data._textCacheAll = textCacheAll;
-					}
-					return this._listSyntax_isTextMatch(listItem.data._textCacheAll, searchTerm);
-				},
-				isAsync: true,
-			},
-		};
-	}
-
-	_listSyntax_isTextMatch (str, searchTerm) { return str && str.includes(searchTerm); }
-
-	// TODO(Future) the ideal solution to this is to render every entity to plain text (or failing that, Markdown) and
-	//   indexing that text with e.g. elasticlunr.
-	_getSearchCacheStats (entity) {
-		return this._getSearchCache_entries(entity);
-	}
-
-	_getSearchCache_entries (entity) {
-		if (!entity.entries) return "";
-		const ptrOut = {_: ""};
-		this._getSearchCache_handleEntryProp(entity, "entries", ptrOut);
-		return ptrOut._;
-	}
-
-	_getSearchCache_handleEntryProp (entity, prop, ptrOut) {
-		if (!entity[prop]) return;
-		ListPage._READONLY_WALKER.walk(
-			entity[prop],
-			{
-				string: (str) => this._getSearchCache_handleString(ptrOut, str),
-			},
-		);
-	}
-
-	_getSearchCache_handleString (ptrOut, str) {
-		ptrOut._ += `${Renderer.stripTags(str).toLowerCase()} -- `;
-	}
-
-	async _pGetSearchCacheFluff (entity) {
-		const fluff = this._pFnGetFluff ? await this._pFnGetFluff(entity) : null;
-		return fluff ? this._getSearchCache_entries(fluff) : "";
-	}
-
-	async _pGetSearchCacheAll (entity, {textCacheStats = null, textCacheFluff = null}) {
-		textCacheStats = textCacheStats || this._getSearchCacheStats(entity);
-		textCacheFluff = textCacheFluff || await this._pGetSearchCacheFluff(entity);
-		return {
-			textCacheStats,
-			textCacheFluff,
-			textCacheAll: [textCacheStats, textCacheFluff].filter(Boolean).join(" -- "),
-		};
-	}
-
-	// ==================
-
 	static _checkShowAllExcluded (list, $pagecontent) {
 		if (!ExcludeUtil.isAllContentExcluded(list)) return;
 
@@ -1267,7 +1284,7 @@ class ListPage {
 			.on("click", async evt => {
 				let url = window.location.href;
 
-				if (evt.ctrlKey) {
+				if (evt.ctrlKey || evt.metaKey) {
 					await MiscUtil.pCopyTextToClipboard(this._filterBox.getFilterTag());
 					JqueryUtil.showCopiedEffect($btn);
 					return;
@@ -1355,13 +1372,12 @@ class ListPage {
 			optsList,
 		},
 	) {
-		const list = new List({$iptSearch, $wrpList, syntax, ...optsList});
-
 		const helpText = [];
+		if (isBindFindHotkey) helpText.push(`Hotkey: f.`);
+
+		const list = new List({$iptSearch, $wrpList, syntax, helpText, ...optsList});
 
 		if (isBindFindHotkey) {
-			helpText.push(`Hotkey: f.`);
-
 			$(document.body).on("keypress", (evt) => {
 				if (!EventUtil.noModifierKeys(evt) || EventUtil.isInInput(evt)) return;
 				if (EventUtil.getKeyIgnoreCapsLock(evt) === "f") {
@@ -1370,16 +1386,6 @@ class ListPage {
 				}
 			});
 		}
-
-		if (syntax) {
-			Object.values(syntax)
-				.filter(({help}) => help)
-				.forEach(({help}) => {
-					helpText.push(help);
-				});
-		}
-
-		if (helpText.length) $iptSearch.title(helpText.join(" "));
 
 		$btnReset.click(() => {
 			$iptSearch.val("");
@@ -1657,14 +1663,19 @@ class ListPage {
 			contextOptions.push(action);
 		}
 
-		if (opts.other) {
+		if (opts.other?.length) {
 			if (contextOptions.length) contextOptions.push(null); // Add a spacer after the previous group
 
 			opts.other.forEach(oth => {
-				const action = new ContextUtil.Action(
-					oth.name,
-					oth.pFn,
-				);
+				const action = oth.type === "link"
+					? new ContextUtil.ActionLink(
+						oth.name,
+						oth.fn,
+					)
+					: new ContextUtil.Action(
+						oth.name,
+						oth.pFn,
+					);
 				contextOptions.push(action);
 			});
 		}
@@ -1698,7 +1709,3 @@ class ListPage {
 		return sub;
 	}
 }
-ListPage._READONLY_WALKER = MiscUtil.getWalker({
-	keyBlocklist: new Set(["type", "colStyles", "style"]),
-	isNoModification: true,
-});

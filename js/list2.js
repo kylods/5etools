@@ -1,3 +1,5 @@
+"use strict";
+
 class ListItem {
 	/**
 	 * @param ix External ID information (e.g. the location of the entry this ListItem represents in a list of entries)
@@ -86,6 +88,7 @@ class List {
 	 * @param [opts.syntax] A dictionary of search syntax prefixes, each with an item "to display" checker function.
 	 * @param [opts.isFuzzy]
 	 * @param [opts.isSkipSearchKeybindingEnter]
+	 * @param {array} [opts.helpText]
 	 */
 	constructor (opts) {
 		if (opts.fnSearch && opts.isFuzzy) throw new Error(`The options "fnSearch" and "isFuzzy" are mutually incompatible!`);
@@ -97,6 +100,7 @@ class List {
 		this._syntax = opts.syntax;
 		this._isFuzzy = !!opts.isFuzzy;
 		this._isSkipSearchKeybindingEnter = !!opts.isSkipSearchKeybindingEnter;
+		this._helpText = opts.helpText;
 
 		this._items = [];
 		this._eventHandlers = {};
@@ -112,7 +116,8 @@ class List {
 		if (this._isFuzzy) this._initFuzzySearch();
 
 		this._searchedItems = [];
-		this._filteredSortedItems = [];
+		this._filteredItems = [];
+		this._sortedItems = [];
 
 		this._isInit = false;
 		this._isDirty = false;
@@ -126,7 +131,7 @@ class List {
 	}
 
 	get items () { return this._items; }
-	get visibleItems () { return this._filteredSortedItems; }
+	get visibleItems () { return this._sortedItems; }
 	get sortBy () { return this._sortBy; }
 	get sortDir () { return this._sortDir; }
 	set nextList (list) { this._nextList = list; }
@@ -145,7 +150,19 @@ class List {
 			UiUtil.bindTypingEnd({$ipt: this._$iptSearch, fnKeyup: () => this.search(this._$iptSearch.val())});
 			this._searchTerm = List.getCleanSearchTerm(this._$iptSearch.val());
 			this._init_bindKeydowns();
+
+			// region Help text
+			const helpText = [
+				...(this._helpText || []),
+				...Object.values(this._syntax || {})
+					.filter(({help}) => help)
+					.map(({help}) => help),
+			];
+
+			if (helpText.length) this._$iptSearch.title(helpText.join(" "));
+			// endregion
 		}
+
 		this._doSearch();
 		this._isInit = true;
 	}
@@ -301,35 +318,50 @@ class List {
 		this._doFilter();
 	}
 
+	getFilteredItems ({items = null, fnFilter} = {}) {
+		items = items || this._searchedItems;
+		fnFilter = fnFilter || this._fnFilter;
+
+		if (!fnFilter) return items;
+
+		return items.filter(it => fnFilter(it));
+	}
+
 	_doFilter () {
-		if (this._fnFilter) this._filteredSortedItems = this._searchedItems.filter(it => this._fnFilter(it));
-		else this._filteredSortedItems = this._searchedItems;
+		this._filteredItems = this.getFilteredItems();
 		this._doSort();
 	}
 
-	_doSort () {
+	getSortedItems ({items = null} = {}) {
+		items = items || [...this._filteredItems];
+
 		const opts = {
 			sortBy: this._sortBy,
 			// The sort function should generally ignore this, as we do the reversing here. We expose it in case there
 			//   is specific functionality that requires it.
 			sortDir: this._sortDir,
 		};
-		if (this._fnSort) this._filteredSortedItems.sort((a, b) => this._fnSort(a, b, opts));
-		if (this._sortDir === "desc") this._filteredSortedItems.reverse();
+		if (this._fnSort) items.sort((a, b) => this._fnSort(a, b, opts));
+		if (this._sortDir === "desc") items.reverse();
 
+		return items;
+	}
+
+	_doSort () {
+		this._sortedItems = this.getSortedItems();
 		this._doRender();
 	}
 
 	_doRender () {
-		const len = this._filteredSortedItems.length;
+		const len = this._sortedItems.length;
 
 		if (this._isUseJquery) {
 			this._$wrpList.children().detach();
-			for (let i = 0; i < len; ++i) this._$wrpList.append(this._filteredSortedItems[i].ele);
+			for (let i = 0; i < len; ++i) this._$wrpList.append(this._sortedItems[i].ele);
 		} else {
 			this._$wrpList[0].innerHTML = "";
 			const frag = document.createDocumentFragment();
-			for (let i = 0; i < len; ++i) frag.appendChild(this._filteredSortedItems[i].ele);
+			for (let i = 0; i < len; ++i) frag.appendChild(this._sortedItems[i].ele);
 			this._$wrpList[0].appendChild(frag);
 		}
 
@@ -561,4 +593,5 @@ List._DEFAULTS = {
 	fnFilter: null,
 };
 
-if (typeof module !== "undefined") module.exports = {List, ListItem};
+globalThis.List = List;
+globalThis.ListItem = ListItem;

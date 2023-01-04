@@ -66,6 +66,8 @@ class PsionicsPage extends ListPage {
 					_text: {name: "Text", transform: (it) => Renderer.psionic.getBodyText(it, Renderer.get()), flex: 3},
 				},
 			},
+
+			listSyntax: new ListSyntaxPsionics({fnGetDataList: () => this._dataList}),
 		});
 	}
 
@@ -96,7 +98,7 @@ class PsionicsPage extends ListPage {
 			<span class="bold col-6 pl-0">${p.name}</span>
 			<span class="col-2 text-center">${typeMeta.short}</span>
 			<span class="col-2 text-center ${p._fOrder === VeCt.STR_NONE ? "list-entry-none" : ""}">${p._fOrder}</span>
-			<span class="col-2 text-center pr-0" title="${Parser.sourceJsonToFull(p.source)}" ${BrewUtil2.sourceJsonToStyle(p.source)}>${source}</span>
+			<span class="col-2 text-center pr-0" title="${Parser.sourceJsonToFull(p.source)}" ${Parser.sourceJsonToStyle(p.source)}>${source}</span>
 		</a>`;
 
 		const listItem = new ListItem(
@@ -138,15 +140,6 @@ class PsionicsPage extends ListPage {
 	async pDoLoadSubHash (sub) {
 		sub = await super.pDoLoadSubHash(sub);
 		await this._bookView.pHandleSub(sub);
-	}
-
-	_getSearchCacheStats (entity) {
-		if (!entity.entries && !entity.modes && !entity.focus) return "";
-		const ptrOut = {_: ""};
-		this._getSearchCache_handleEntryProp(entity, "entries", ptrOut);
-		this._getSearchCache_handleEntryProp(entity, "modes", ptrOut);
-		this._getSearchCache_handleEntryProp(entity, "focus", ptrOut);
-		return ptrOut._;
 	}
 }
 
