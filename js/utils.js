@@ -2,7 +2,7 @@
 
 // in deployment, `IS_DEPLOYED = "<version number>";` should be set below.
 globalThis.IS_DEPLOYED = undefined;
-globalThis.VERSION_NUMBER = /* 5ETOOLS_VERSION__OPEN */"1.176.1"/* 5ETOOLS_VERSION__CLOSE */;
+globalThis.VERSION_NUMBER = /* 5ETOOLS_VERSION__OPEN */"1.178.0"/* 5ETOOLS_VERSION__CLOSE */;
 globalThis.DEPLOYED_STATIC_ROOT = ""; // "https://static.5etools.com/"; // FIXME re-enable this when we have a CDN again
 globalThis.DEPLOYED_IMG_ROOT = undefined;
 // for the roll20 script to set
@@ -790,9 +790,10 @@ globalThis.JqueryUtil = {
 		$ele.click(() => setTimeout(() => $ele.parent().addClass("open"), 1)); // defer to allow the above to complete
 	},
 
+	_WRP_TOAST: null,
 	_ACTIVE_TOAST: [],
 	/**
-	 * @param {{content: jQuery|string, type?: string, autoHideTime?: number} | string} options The options for the toast.
+	 * @param {{content: jQuery|string, type?: string, autoHideTime?: boolean} | string} options The options for the toast.
 	 * @param {(jQuery|string)} options.content Toast contents. Supports jQuery objects.
 	 * @param {string} options.type Toast type. Can be any Bootstrap alert type ("success", "info", "warning", or "danger").
 	 * @param {number} options.autoHideTime The time in ms before the toast will be automatically hidden.
@@ -801,6 +802,14 @@ globalThis.JqueryUtil = {
 	 */
 	doToast (options) {
 		if (typeof window === "undefined") return;
+
+		if (JqueryUtil._WRP_TOAST == null) {
+			JqueryUtil._WRP_TOAST = e_({
+				tag: "div",
+				clazz: "toast__container no-events w-100 overflow-y-hidden ve-flex-col",
+			});
+			document.body.appendChild(JqueryUtil._WRP_TOAST);
+		}
 
 		if (typeof options === "string") {
 			options = {
@@ -815,10 +824,7 @@ globalThis.JqueryUtil = {
 
 		const eleToast = e_({
 			tag: "div",
-			clazz: `toast toast--type-${options.type}`,
-			data: {
-				pos: 0,
-			},
+			clazz: `toast toast--type-${options.type} events-initial relative my-2 mx-auto`,
 			children: [
 				e_({
 					tag: "div",
@@ -849,38 +855,47 @@ globalThis.JqueryUtil = {
 			},
 			click: evt => {
 				evt.preventDefault();
-				JqueryUtil._doToastCleanup(eleToast);
+				JqueryUtil._doToastCleanup(toastMeta);
 
 				// Close all on SHIFT-click
 				if (!evt.shiftKey) return;
-				[...JqueryUtil._ACTIVE_TOAST].forEach(eleToast => JqueryUtil._doToastCleanup(eleToast));
+				[...JqueryUtil._ACTIVE_TOAST].forEach(toastMeta => JqueryUtil._doToastCleanup(toastMeta));
 			},
 		});
 
-		eleToast.prependTo(document.body);
+		// FIXME(future) this could be smoother; when stacking multiple tooltips, the incoming tooltip bumps old tooltips
+		//   down instantly (should be animated).
+		//   See e.g.:
+		//   `[...new Array(10)].forEach((_, i) => MiscUtil.pDelay(i * 50).then(() => JqueryUtil.doToast(`test ${i}`)))`
+		eleToast.prependTo(JqueryUtil._WRP_TOAST);
 
-		setTimeout(() => eleToast.addClass(`toast--animate`), 5);
-		if (options.isAutoHide) {
-			setTimeout(() => {
-				JqueryUtil._doToastCleanup(eleToast);
-			}, options.autoHideTime);
-		}
+		const toastMeta = {isAutoHide: !!options.isAutoHide, eleToast};
+		JqueryUtil._ACTIVE_TOAST.push(toastMeta);
 
-		if (JqueryUtil._ACTIVE_TOAST.length) {
-			JqueryUtil._ACTIVE_TOAST.forEach(eleToastOld => {
-				const pos = eleToastOld.dataset["pos"];
-				eleToastOld.dataset["pos"] = pos + 1;
-				if (pos === 2) JqueryUtil._doToastCleanup(eleToastOld);
+		AnimationUtil.pRecomputeStyles()
+			.then(() => {
+				eleToast.addClass(`toast--animate`);
+
+				if (options.isAutoHide) {
+					setTimeout(() => {
+						JqueryUtil._doToastCleanup(toastMeta);
+					}, options.autoHideTime);
+				}
+
+				if (JqueryUtil._ACTIVE_TOAST.length >= 3) {
+					JqueryUtil._ACTIVE_TOAST
+						.filter(({isAutoHide}) => !isAutoHide)
+						.forEach(toastMeta => {
+							JqueryUtil._doToastCleanup(toastMeta);
+						});
+				}
 			});
-		}
-
-		JqueryUtil._ACTIVE_TOAST.push(eleToast);
 	},
 
-	_doToastCleanup (eleToast) {
-		eleToast.removeClass("toast--animate");
-		setTimeout(() => eleToast.parentElement && document.body.removeChild(eleToast), 85);
-		JqueryUtil._ACTIVE_TOAST.splice(JqueryUtil._ACTIVE_TOAST.indexOf(eleToast), 1);
+	_doToastCleanup (toastMeta) {
+		toastMeta.eleToast.removeClass("toast--animate");
+		JqueryUtil._ACTIVE_TOAST.splice(JqueryUtil._ACTIVE_TOAST.indexOf(toastMeta), 1);
+		setTimeout(() => toastMeta.eleToast.parentElement && toastMeta.eleToast.remove(), 85);
 	},
 
 	isMobile () {
@@ -893,6 +908,11 @@ globalThis.JqueryUtil = {
 if (typeof window !== "undefined") window.addEventListener("load", JqueryUtil.initEnhancements);
 
 globalThis.ElementUtil = {
+	_ATTRS_NO_FALSY: new Set([
+		"checked",
+		"disabled",
+	]),
+
 	getOrModify ({
 		tag,
 		clazz,
@@ -939,8 +959,17 @@ globalThis.ElementUtil = {
 		if (href != null) ele.setAttribute("href", href);
 		if (val != null) ele.setAttribute("value", val);
 		if (type != null) ele.setAttribute("type", type);
-		if (attrs != null) { for (const k in attrs) { if (attrs[k] === undefined) continue; ele.setAttribute(k, attrs[k]); } }
+
+		if (attrs != null) {
+			for (const k in attrs) {
+				if (attrs[k] === undefined) continue;
+				if (!attrs[k] && ElementUtil._ATTRS_NO_FALSY.has(k)) continue;
+				ele.setAttribute(k, attrs[k]);
+			}
+		}
+
 		if (data != null) { for (const k in data) { if (data[k] === undefined) continue; ele.dataset[k] = data[k]; } }
+
 		if (children) for (let i = 0, len = children.length; i < len; ++i) if (children[i] != null) ele.append(children[i]);
 
 		ele.appends = ele.appends || ElementUtil._appends.bind(ele);
@@ -2674,6 +2703,7 @@ UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_DECK] = UrlUtil.PG_DECKS;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_CARD] = "card";
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_SKILLS] = "skill";
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_SENSES] = "sense";
+UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_LEGENDARY_GROUP] = "legendaryGroup";
 
 UrlUtil.CAT_TO_HOVER_PAGE = {};
 UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_CLASS_FEATURE] = "classfeature";
@@ -2681,6 +2711,7 @@ UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_SUBCLASS_FEATURE] = "subclassfeature";
 UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_CARD] = "card";
 UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_SKILLS] = "skill";
 UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_SENSES] = "sense";
+UrlUtil.CAT_TO_HOVER_PAGE[Parser.CAT_ID_LEGENDARY_GROUP] = "legendaryGroup";
 
 UrlUtil.HASH_START_CREATURE_SCALED = `${VeCt.HASH_SCALED}${HASH_SUB_KV_SEP}`;
 UrlUtil.HASH_START_CREATURE_SCALED_SPELL_SUMMON = `${VeCt.HASH_SCALED_SPELL_SUMMON}${HASH_SUB_KV_SEP}`;
@@ -6316,6 +6347,16 @@ Array.prototype.meanAbsoluteDeviation || Object.defineProperty(Array.prototype, 
 	value: function () {
 		const mean = this.mean();
 		return (this.map(num => Math.abs(num - mean)) || []).mean();
+	},
+});
+
+Map.prototype.getOrSet || Object.defineProperty(Map.prototype, "getOrSet", {
+	enumerable: false,
+	writable: true,
+	value: function (k, orV) {
+		if (this.has(k)) return this.get(k);
+		this.set(k, orV);
+		return orV;
 	},
 });
 

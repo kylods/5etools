@@ -2398,7 +2398,7 @@ globalThis.ScaleClassSummonedCreature = {
 			.replace(/[-+]\s*\d+\s*[-+]\s*\d+\b/g, (...n) => eval(n[0]))
 		;
 
-		const reDice = /(\b\d+d\d+\b)/g;
+		const reDice = /(\b(?:\d+)?d\d+\b)/g;
 		let ix = 0;
 		const outSimplified = out.split(reDice)
 			.map(pt => {
@@ -2444,7 +2444,7 @@ globalThis.ScaleClassSummonedCreature = {
 	},
 
 	_scale_skills (mon, toClassLevel, state) {
-		if (mon.passive) mon.passive = this._scale_getConvertedPbString(state, mon.passive);
+		if (mon.passive != null) mon.passive = this._scale_getConvertedPbString(state, `${mon.passive}`);
 
 		if (!mon.skill) return;
 		this._scale_savesSkills(mon, toClassLevel, state, "skill");
@@ -2487,6 +2487,8 @@ globalThis.ScaleClassSummonedCreature = {
 				return `${Parser.getAbilityModNumber(mon.con) + (numTimes * toClassLevel)}`;
 			})
 		;
+
+		basePart = this._scale_getConvertedPbString(state, basePart);
 
 		// "the beast has a number of Hit Dice [d8s] equal to your ranger level"
 		if (hdPart) {
