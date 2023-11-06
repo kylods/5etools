@@ -558,7 +558,7 @@ class SaveManager extends BaseComponent {
 
 		const $wrpRows = $(`<div class="ve-flex-col"></div>`);
 
-		const $dispNoSaves = $(`<div class="ve-flex-col"><i class="ve-muted text-center">No saves found.</i></div>`);
+		const $dispNoSaves = $(`<div class="ve-flex-col"><i class="ve-muted ve-text-center">No saves found.</i></div>`);
 
 		const $btnExpandCollapseAll = $(`<button class="btn btn-default btn-xs px-1 ve-flex-vh-center h-100 no-shrink"></button>`)
 			.click(() => {
@@ -709,7 +709,7 @@ class SaveManager extends BaseComponent {
 			cbOnUpload,
 		},
 	) {
-		const $wrp = $(`<div class="pt-2 ve-flex-col"></div>`);
+		const $wrp = $(`<div class="pt-2 ve-flex-col no-print"></div>`);
 
 		const renderableCollectionSummary = new SaveManager._RenderableCollectionSaves_Summary(
 			{
@@ -731,7 +731,10 @@ class SaveManager extends BaseComponent {
 		this._addHookBase("saves", hkSaves);
 		this._addHookBase("activeId", hkSaves);
 
-		return $wrp;
+		return {
+			$wrp,
+			cbOnListUpdated: renderableCollectionSummary.cbOnListUpdated.bind(renderableCollectionSummary),
+		};
 	}
 
 	$getBtnDownloadSave_ ({save, title = "Download", cbOnSave = null}) {
@@ -812,7 +815,7 @@ class SaveManager extends BaseComponent {
 	}
 }
 
-SaveManager._RenderableCollectionSaves_Load = class extends RenderableCollectionBase {
+SaveManager._RenderableCollectionSaves_Load = class extends RenderableCollectionGenericRows {
 	constructor (
 		{
 			comp,
@@ -823,19 +826,14 @@ SaveManager._RenderableCollectionSaves_Load = class extends RenderableCollection
 			isReadOnlyUi,
 		},
 	) {
-		super(comp, "saves", {namespace: "load"});
+		super(comp, "saves", $wrpRows, {namespace: "load"});
 		this._doClose = doClose;
-		this._$wrpRows = $wrpRows;
 		this._page = page;
 		this._isReadOnlyUi = isReadOnlyUi;
 	}
 
 	getNewRender (save, i) {
-		const comp = BaseComponent.fromObject(save.entity, "*");
-		comp._addHookAll("state", () => {
-			this._getCollectionItem(save.id).entity = comp.toObject("*");
-			this._comp._triggerCollectionUpdate("saves");
-		});
+		const comp = this._utils.getNewRenderComp(save, i);
 
 		const $wrpPreviewInner = $(`<div class="ve-flex-col py-3 ml-4 lst__wrp-preview-inner w-100"></div>`);
 
@@ -922,19 +920,6 @@ SaveManager._RenderableCollectionSaves_Load = class extends RenderableCollection
 			$wrpRow,
 		};
 	}
-
-	doUpdateExistingRender (renderedMeta, save, i) {
-		renderedMeta.comp._proxyAssignSimple("state", save.entity, true);
-		if (!renderedMeta.$wrpRow.parent().is(this._$wrpRows)) renderedMeta.$wrpRow.appendTo(this._$wrpRows);
-	}
-
-	doReorderExistingComponent (renderedMeta, save, i) {
-		const ix = this._comp._state.saves.map(it => it.id).indexOf(save.id);
-		const curIx = this._$wrpRows.find(`> *`).index(renderedMeta.$wrpRow);
-
-		const isMove = !this._$wrpRows.length || curIx !== ix;
-		if (isMove) renderedMeta.$wrpRow.detach().appendTo(this._$wrpRows);
-	}
 };
 
 SaveManager._RenderableCollectionSaves_Summary = class extends RenderableCollectionBase {
@@ -961,6 +946,11 @@ SaveManager._RenderableCollectionSaves_Summary = class extends RenderableCollect
 		this._cbOnUpload = cbOnUpload;
 	}
 
+	cbOnListUpdated ({cntVisibleItems}) {
+		const renderedCollection = this._comp._getRenderedCollection({prop: "saves", namespace: "summary"});
+		Object.values(renderedCollection).forEach(renderedMeta => renderedMeta.$dispCount.html(`<span class="glyphicon glyphicon-pushpin mr-1"></span> ${cntVisibleItems}`));
+	}
+
 	getNewRender (save, i) {
 		const comp = BaseComponent.fromObject(save.entity, "*");
 		comp._addHookAll("state", () => {
@@ -969,6 +959,8 @@ SaveManager._RenderableCollectionSaves_Summary = class extends RenderableCollect
 		});
 
 		const $iptName = ComponentUiUtil.$getIptStr(comp, "name", {placeholder: "(Unnamed List)"});
+
+		const $dispCount = $(`<div class="absolute right-0 z-index-1 no-events ve-flex-vh-center ve-muted pr-2 ve-small" title="Number of Pinned List Items"></div>`);
 
 		const $btnNew = $(`<button class="btn btn-5et btn-xs btn-default" title="New Pinned List"><span class="glyphicon glyphicon-file"></span></button>`)
 			.click(evt => this._cbOnNew(evt));
@@ -997,9 +989,10 @@ SaveManager._RenderableCollectionSaves_Summary = class extends RenderableCollect
 
 		const $wrpRow = $$`<div class="ve-flex-col my-2 w-100">
 			<div class="ve-flex-v-center">
-				<div class="ve-flex-v-center mr-1 w-100 min-w-0">
+				<div class="ve-flex-v-center mr-1 w-100 min-w-0 relative">
 					<div class="mr-2 ve-muted">List:</div>
 					${$iptName}
+					${$dispCount}
 				</div>
 				<div class="ve-flex-h-right ve-flex-v-center btn-group no-shrink">
 					${$btnNew}
@@ -1019,6 +1012,7 @@ SaveManager._RenderableCollectionSaves_Summary = class extends RenderableCollect
 		return {
 			comp,
 			$wrpRow,
+			$dispCount,
 			$iptName,
 			hkDisplay,
 		};

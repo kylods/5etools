@@ -4,6 +4,7 @@ class PageFilterBestiary extends PageFilter {
 	static _NEUT_ALIGNS = ["NX", "NY"];
 	static MISC_FILTER_SPELLCASTER = "Spellcaster, ";
 	static _RE_SPELL_TAG = /{@spell ([^}]+)}/g;
+	static _RE_ITEM_TAG = /{@item ([^}]+)}/g;
 	static _WALKER = null;
 	static _BASIC_ENTRY_PROPS = [
 		"trait",
@@ -68,6 +69,7 @@ class PageFilterBestiary extends PageFilter {
 
 	static _getDamageTagDisplayText (tag) { return Parser.dmgTypeToFull(tag).toTitleCase(); }
 	static _getConditionDisplayText (uid) { return uid.split("|")[0].toTitleCase(); }
+	static _getAbilitySaveDisplayText (abl) { return `${abl.uppercaseFirst()} Save`; }
 	// endregion
 
 	constructor () {
@@ -173,6 +175,28 @@ class PageFilterBestiary extends PageFilter {
 			items: [...Parser.CONDITIONS],
 		});
 		this._conditionsInflictedFilter = new MultiFilter({header: "Conditions Inflicted", filters: [this._conditionsInflictedFilterBase, this._conditionsInflictedFilterLegendary, this._conditionsInflictedFilterSpells]});
+		this._savingThrowForcedFilterBase = new Filter({
+			header: "Saving Throws Required by Traits/Actions",
+			displayFn: this.constructor._getAbilitySaveDisplayText,
+			displayFnMini: abl => `Requires ${this.constructor._getAbilitySaveDisplayText(abl)} (Trait/Action)`,
+			items: Parser.ABIL_ABVS.map(abl => Parser.attAbvToFull(abl).toLowerCase()),
+			itemSortFn: null,
+		});
+		this._savingThrowForcedFilterLegendary = new Filter({
+			header: "Saving Throws Required by Lair Actions/Regional Effects",
+			displayFn: this.constructor._getAbilitySaveDisplayText,
+			displayFnMini: abl => `Requires ${this.constructor._getAbilitySaveDisplayText(abl)} (Lair/Regional)`,
+			items: Parser.ABIL_ABVS.map(abl => Parser.attAbvToFull(abl).toLowerCase()),
+			itemSortFn: null,
+		});
+		this._savingThrowForcedFilterSpells = new Filter({
+			header: "Saving Throws Required by Spells",
+			displayFn: this.constructor._getAbilitySaveDisplayText,
+			displayFnMini: abl => `Requires ${this.constructor._getAbilitySaveDisplayText(abl)} (Spell)`,
+			items: Parser.ABIL_ABVS.map(abl => Parser.attAbvToFull(abl).toLowerCase()),
+			itemSortFn: null,
+		});
+		this._savingThrowForcedFilter = new MultiFilter({header: "Saving Throw Required", filters: [this._savingThrowForcedFilterBase, this._savingThrowForcedFilterLegendary, this._savingThrowForcedFilterSpells]});
 		this._senseFilter = new Filter({
 			header: "Senses",
 			displayFn: (it) => Parser.monSenseTagToFull(it).toTitleCase(),
@@ -233,6 +257,7 @@ class PageFilterBestiary extends PageFilter {
 			displayFn: it => Parser.getOrdinalForm(it),
 		});
 		this._spellKnownFilter = new SearchableFilter({header: "Spells Known", displayFn: (it) => it.split("|")[0].toTitleCase(), itemSortFn: SortUtil.ascSortLower});
+		this._equipmentFilter = new SearchableFilter({header: "Equipment", displayFn: (it) => it.split("|")[0].toTitleCase(), itemSortFn: SortUtil.ascSortLower});
 		this._dragonAgeFilter = new Filter({
 			header: "Dragon Age",
 			items: [...PageFilterBestiary._DRAGON_AGES],
@@ -340,12 +365,22 @@ class PageFilterBestiary extends PageFilter {
 
 		if (mon.languageTags?.length) mon._fLanguageTags = mon.languageTags;
 		else mon._fLanguageTags = ["None"];
+
+		mon._fEquipment = this._getEquipmentList(mon);
 	}
+
+	/* -------------------------------------------- */
+
+	static _getInitWalker () {
+		return PageFilterBestiary._WALKER = PageFilterBestiary._WALKER || MiscUtil.getWalker({isNoModification: true});
+	}
+
+	/* -------------------------------------------- */
 
 	static _getSpellcasterMeta (mon) {
 		if (!mon.spellcasting?.length) return null;
 
-		PageFilterBestiary._WALKER = PageFilterBestiary._WALKER || MiscUtil.getWalker({isNoModification: true});
+		const walker = this._getInitWalker();
 
 		const spellSet = new Set();
 		const spellLevels = new Set();
@@ -355,10 +390,10 @@ class PageFilterBestiary extends PageFilter {
 				for (const slotLevel of slotLevels) spellLevels.add(slotLevel);
 			}
 
-			PageFilterBestiary._WALKER.walk(
+			walker.walk(
 				spc,
 				{
-					string: this._getSpellcasterMeta_stringHandler.bind(null, spellSet),
+					string: this._getSpellcasterMeta_stringHandler.bind(this, spellSet),
 				},
 			);
 		}
@@ -375,6 +410,8 @@ class PageFilterBestiary extends PageFilter {
 		});
 	}
 
+	/* -------------------------------------------- */
+
 	static _hasRecharge (mon) {
 		for (const prop of PageFilterBestiary._BASIC_ENTRY_PROPS) {
 			if (!mon[prop]) continue;
@@ -385,6 +422,43 @@ class PageFilterBestiary extends PageFilter {
 		}
 		return false;
 	}
+
+	/* -------------------------------------------- */
+
+	static _getEquipmentList (mon) {
+		const itemSet = new Set(mon.attachedItems || []);
+
+		const walker = this._getInitWalker();
+
+		for (const acItem of (mon.ac || [])) {
+			if (!acItem?.from?.length) continue;
+			for (const from of acItem.from) this._getEquipmentList_stringHandler(itemSet, from);
+		}
+
+		for (const trait of (mon.trait || [])) {
+			if (!trait.name.toLowerCase().startsWith("special equipment")) continue;
+			walker.walk(
+				trait.entries,
+				{
+					string: this._getEquipmentList_stringHandler.bind(this, itemSet),
+				},
+			);
+			break;
+		}
+
+		return [...itemSet];
+	}
+
+	static _getEquipmentList_stringHandler (itemSet, str) {
+		str
+			.replace(PageFilterBestiary._RE_ITEM_TAG, (...m) => {
+				const unpacked = DataUtil.proxy.unpackUid("item", m[1], "item", {isLower: true});
+				itemSet.add(DataUtil.proxy.getUid("item", unpacked));
+				return "";
+			});
+	}
+
+	/* -------------------------------------------- */
 
 	addToFilters (mon, isExcluded) {
 		if (isExcluded) return;
@@ -413,6 +487,7 @@ class PageFilterBestiary extends PageFilter {
 		this._passivePerceptionFilter.addItem(mon._fPassive);
 		this._spellSlotLevelFilter.addItem(mon._fSpellSlotLevels);
 		this._spellKnownFilter.addItem(mon._fSpellsKnown);
+		this._equipmentFilter.addItem(mon._fEquipment);
 		if (mon._versionBase_isVersion) this._miscFilter.addItem("Is Variant");
 		this._damageTypeFilterBase.addItem(mon.damageTags);
 		this._damageTypeFilterLegendary.addItem(mon.damageTagsLegendary);
@@ -420,6 +495,9 @@ class PageFilterBestiary extends PageFilter {
 		this._conditionsInflictedFilterBase.addItem(mon.conditionInflict);
 		this._conditionsInflictedFilterLegendary.addItem(mon.conditionInflictLegendary);
 		this._conditionsInflictedFilterSpells.addItem(mon.conditionInflictSpell);
+		this._savingThrowForcedFilterBase.addItem(mon.savingThrowForced);
+		this._savingThrowForcedFilterLegendary.addItem(mon.savingThrowForcedLegendary);
+		this._savingThrowForcedFilterSpells.addItem(mon.savingThrowForcedSpell);
 		this._dragonAgeFilter.addItem(mon.dragonAge);
 		this._dragonCastingColor.addItem(mon.dragonCastingColor);
 	}
@@ -456,12 +534,14 @@ class PageFilterBestiary extends PageFilter {
 			this._languageFilter,
 			this._damageTypeFilter,
 			this._conditionsInflictedFilter,
+			this._savingThrowForcedFilter,
 			this._dragonAgeFilter,
 			this._dragonCastingColor,
 			this._acFilter,
 			this._averageHpFilter,
 			this._abilityScoreFilter,
 			this._spellKnownFilter,
+			this._equipmentFilter,
 		];
 	}
 
@@ -505,6 +585,11 @@ class PageFilterBestiary extends PageFilter {
 				m.conditionInflictLegendary,
 				m.conditionInflictSpell,
 			],
+			[
+				m.savingThrowForced,
+				m.savingThrowForcedLegendary,
+				m.savingThrowForcedSpell,
+			],
 			m.dragonAge,
 			m.dragonCastingColor,
 			m._fAc,
@@ -518,6 +603,7 @@ class PageFilterBestiary extends PageFilter {
 				m._fCha,
 			],
 			m._fSpellsKnown,
+			m._fEquipment,
 		);
 	}
 }
@@ -580,8 +666,8 @@ class ModalFilterBestiary extends ModalFilter {
 
 			<div class="col-4 ${mon._versionBase_isVersion ? "italic" : ""} ${this._getNameStyle()}">${mon._versionBase_isVersion ? `<span class="px-3"></span>` : ""}${mon.name}</div>
 			<div class="col-4">${type}</div>
-			<div class="col-2 text-center">${cr}</div>
-			<div class="col-1 text-center ${Parser.sourceJsonToColor(mon.source)} pr-0" title="${Parser.sourceJsonToFull(mon.source)}" ${Parser.sourceJsonToStyle(mon.source)}>${source}</div>
+			<div class="col-2 ve-text-center">${cr}</div>
+			<div class="col-1 ve-text-center ${Parser.sourceJsonToColor(mon.source)} pr-0" title="${Parser.sourceJsonToFull(mon.source)}" ${Parser.sourceJsonToStyle(mon.source)}>${source}</div>
 		</div>`;
 
 		const btnShowHidePreview = eleRow.firstElementChild.children[1].firstElementChild;

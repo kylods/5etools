@@ -282,7 +282,7 @@
 										},
 										{
 											"type": "entries",
-											"name": "For the barbarian's Reckless Attack, do you grant advantage to all enemies, or only to the target of your attack? ",
+											"name": "For the barbarian's Reckless Attack, do you grant advantage to all enemies, or only to the target of your attack?",
 											"id": "01d",
 											"entries": [
 												"If you use the barbarian's Reckless Attack, all attack rolls have advantage against you until the start of your next turn."
@@ -649,7 +649,7 @@
 										},
 										{
 											"type": "entries",
-											"name": "Does a Monster Slayer ranger's Supernatural Defense feature apply if a creature damages the ranger, thus causing the ranger to make a Constitution saving throw to maintain concentration on a spell? ",
+											"name": "Does a Monster Slayer ranger's Supernatural Defense feature apply if a creature damages the ranger, thus causing the ranger to make a Constitution saving throw to maintain concentration on a spell?",
 											"entries": [
 												"Yes."
 											],
@@ -2110,7 +2110,7 @@
 											"id": "0ea",
 											"entries": [
 												"The spell is meant to work only as long as you have the temporary hit points that the spell grants. When those temporary hit points are gone, the spell is done.",
-												"Keep in mind that temporary hit points aren't cumulative. If you have temporary hit points and receive more of them, you don't add them together, unless a game feature says you can. You decide which temporary hit points to keep. As an example, let's say you're a warlock with the Dark One's Blessing feature, which gives you temporary hit points when you reduce a creature to 0 hit points. You currently have 2 temporary hit points remaining from {@spell Armor of Agathys||armor of Agathys}, you just slew a monster, and your Dark One's Blessing can now give you 4 temporary hit points. If you take those temporary hit points, they replace the ones from {@spell armor of Agathys} and end that spell, so you might not want to take them and keep the spell going instead, so as to continue benefiting from the cold damage it delivers."
+												"Keep in mind that temporary hit points aren't cumulative. If you have temporary hit points and receive more of them, you don't add them together, unless a game feature says you can. You decide which temporary hit points to keep. As an example, let's say you're a warlock with the Dark One's Blessing feature, which gives you temporary hit points when you reduce a creature to 0 hit points. You currently have 2 temporary hit points remaining from {@spell armor of Agathys}, you just slew a monster, and your Dark One's Blessing can now give you 4 temporary hit points. If you take those temporary hit points, they replace the ones from {@spell armor of Agathys} and end that spell, so you might not want to take them and keep the spell going instead, so as to continue benefiting from the cold damage it delivers."
 											]
 										},
 										{

@@ -12,14 +12,16 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Andir Valmakos.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Andir Valmakos Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
 				}
 			]
 		},
@@ -40,7 +42,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Anhkolox.webp"
-					}
+					},
+					"credit": "Mark Behm"
 				}
 			]
 		},
@@ -73,7 +76,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Aurak Draconian.webp"
-					}
+					},
+					"credit": "Robson Michel"
 				}
 			]
 		},
@@ -89,14 +93,16 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Ayik Ur.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Ayik Ur Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
 				}
 			]
 		},
@@ -129,7 +135,65 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Baaz Draconian.webp"
-					}
+					},
+					"credit": "Robson Michel"
+				}
+			]
+		},
+		{
+			"name": "Bakaris the Younger",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/041-03-004.bakaris-the-younger.webp"
+					},
+					"credit": "Robson Michel"
+				}
+			]
+		},
+		{
+			"name": "Bakaris Uth Estide",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/056-04-002.bakaris.webp"
+					},
+					"credit": "Caio E Santos"
+				}
+			]
+		},
+		{
+			"name": "Becklin Uth Viharin",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/039-03-002.berklin-uth-viharin.webp"
+					},
+					"credit": "Lauren Walsh"
+				}
+			]
+		},
+		{
+			"name": "Belephaion",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/109-06-007.belephaion-true-form.webp"
+					},
+					"title": "At the Threshold of the Heavens, Belephaion reveals his true form",
+					"credit": "Bruce Brenneise"
 				}
 			]
 		},
@@ -162,7 +226,22 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Bozak Draconian.webp"
-					}
+					},
+					"credit": "Robson Michel"
+				}
+			]
+		},
+		{
+			"name": "Captain Hask",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/102-06-004.captain-hask.webp"
+					},
+					"credit": "David Sladek"
 				}
 			]
 		},
@@ -183,7 +262,89 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Caradoc.webp"
-					}
+					},
+					"credit": "Nikki Dawes"
+				}
+			]
+		},
+		{
+			"name": "Clystran",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/085-05-007.clystran.webp"
+					},
+					"credit": "Olivier Bernard"
+				}
+			]
+		},
+		{
+			"name": "Cudgel Ironsmile",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/040-03-003.cudgel-and-becklin.webp"
+					},
+					"title": "Cudgel Ironsmile and Becklin Uth Viharin send off their friend Ispin Greenshield",
+					"credit": "Lauren Walsh"
+				}
+			]
+		},
+		{
+			"name": "Dalamar",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/073-05-003.dalamar.webp"
+					},
+					"title": "Dalamar provides a glimpse of lost, ancient ruins",
+					"credit": "Svetlin Velinov"
+				}
+			]
+		},
+		{
+			"name": "Darrett Highwater",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/042-03-005.darrett-highwater.webp"
+					},
+					"credit": "Dawn Carlos"
+				},
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/112-07-002.darrett-highwater.webp"
+					},
+					"title": "Darrett Highwater Wearing Solamnic Armor",
+					"credit": "Dawn Carlos"
+				}
+			]
+		},
+		{
+			"name": "Demelin",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/096-06-002.demelin.webp"
+					},
+					"credit": "Ekaterina Burmak"
 				}
 			]
 		},
@@ -240,7 +401,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Dragon Army Dragonnel.webp"
-					}
+					},
+					"credit": "Crystal Sully"
 				}
 			]
 		},
@@ -297,7 +459,37 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Dragon Army Soldier.webp"
-					}
+					},
+					"credit": "Andrew Mar"
+				}
+			]
+		},
+		{
+			"name": "Durstan Rial",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/064-04-006.caradoc.webp"
+					},
+					"title": "Knight Caradoc carries a message to Kalaman's leaders",
+					"credit": "Nikki Dawes"
+				}
+			]
+		},
+		{
+			"name": "Duskwalker",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/105-06-005.duskwalker.webp"
+					},
+					"credit": "Jessica Nguyen"
 				}
 			]
 		},
@@ -319,7 +511,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Fewmaster Gholcag.webp"
-					}
+					},
+					"credit": "Alexandre Honoré"
 				}
 			]
 		},
@@ -353,7 +546,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Greater Death Dragon.webp"
-					}
+					},
+					"credit": "Olivier Bernard"
 				}
 			]
 		},
@@ -369,14 +563,31 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Hrigg Roundrook.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Hrigg Roundrook Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
+				}
+			]
+		},
+		{
+			"name": "Ignia",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/129-07-011.dragon-highmaster-kansaldi.webp"
+					},
+					"title": "Dragon Highmaster Kansaldi Fire-Eyes scours the battlefield astride the red dragon Ignia",
+					"credit": "Katerina Ladon"
 				}
 			]
 		},
@@ -392,14 +603,30 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Iriad.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Iriad Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
+				}
+			]
+		},
+		{
+			"name": "Ishvern",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/074-05-004.ishvern.webp"
+					},
+					"credit": "Alexandre Honoré"
 				}
 			]
 		},
@@ -420,7 +647,22 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Istarian Drone.webp"
-					}
+					},
+					"credit": "Mark Behm"
+				}
+			]
+		},
+		{
+			"name": "Jeyev Veldrews",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/047-03-008.jeyev-veldrews.webp"
+					},
+					"credit": "Dawn Carlos"
 				}
 			]
 		},
@@ -454,7 +696,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Kansaldi Fire-Eyes.webp"
-					}
+					},
+					"credit": "Katerina Ladon"
 				}
 			]
 		},
@@ -487,7 +730,22 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Kapak Draconian.webp"
-					}
+					},
+					"credit": "Robson Michel"
+				}
+			]
+		},
+		{
+			"name": "Karavarix",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/128-07-010.karavarix.webp"
+					},
+					"credit": "Olivier Bernard"
 				}
 			]
 		},
@@ -549,7 +807,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Kender Skirmisher.webp"
-					}
+					},
+					"credit": "Nikki Dawes"
 				}
 			]
 		},
@@ -570,7 +829,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Leedara.webp"
-					}
+					},
+					"credit": "Robson Michel"
 				}
 			]
 		},
@@ -604,7 +864,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Lesser Death Dragon.webp"
-					}
+					},
+					"credit": "Jessica Nguyen (Full) & Shawn Wood (Head)"
 				}
 			]
 		},
@@ -620,14 +881,16 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Levna Drakehorn.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Levna Drakehorn Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
 				}
 			]
 		},
@@ -649,7 +912,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Lohezet.webp"
-					}
+					},
+					"credit": "Nikki Dawes"
 				}
 			]
 		},
@@ -671,7 +935,36 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Lord Soth.webp"
-					}
+					},
+					"credit": "Kieran Yanner"
+				}
+			]
+		},
+		{
+			"name": "Lorry Wanwillow",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/121-07-007.lorry-wanwillow.webp"
+					},
+					"credit": "Dawn Carlos"
+				}
+			]
+		},
+		{
+			"name": "Raven Uth Vogler",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/044-03-007.raven-uth-vogler.webp"
+					},
+					"credit": "Robson Michel"
 				}
 			]
 		},
@@ -692,7 +985,23 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Red Ruin.webp"
-					}
+					},
+					"title": "The Dragon Army's ace dragonnel rider, Red Ruin, soars toward her target",
+					"credit": "Crystal Sully"
+				}
+			]
+		},
+		{
+			"name": "Sarlamir",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/068-04-008.knight-sarlamir.webp"
+					},
+					"credit": "Olivier Bernard"
 				}
 			]
 		},
@@ -705,7 +1014,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Sea Elf Scout.webp"
-					}
+					},
+					"credit": "Alexandre Honoré"
 				}
 			]
 		},
@@ -738,7 +1048,8 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Sivak Draconian.webp"
-					}
+					},
+					"credit": "Robson Michel"
 				}
 			]
 		},
@@ -760,7 +1071,23 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Skeletal Knight.webp"
-					}
+					},
+					"credit": "Svetlin Velinov"
+				}
+			]
+		},
+		{
+			"name": "Tatina Rookledust",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/058-04-004.tatina-defense.webp"
+					},
+					"title": "The inventor Tatina Rookledust defends her home from Dragon Army goblins",
+					"credit": "Ralph Horsley"
 				}
 			]
 		},
@@ -776,14 +1103,16 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Tem Temble.webp"
-					}
+					},
+					"credit": "Zuzanna Wuzyk"
 				},
 				{
 					"type": "image",
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Tem Temble Sketch.webp"
-					}
+					},
+					"credit": "Shawn Wood"
 				}
 			]
 		},
@@ -840,7 +1169,22 @@
 					"href": {
 						"type": "internal",
 						"path": "bestiary/DSotDQ/Wersten Kern.webp"
-					}
+					},
+					"credit": "Caroline Gariba"
+				}
+			]
+		},
+		{
+			"name": "Wyhan",
+			"source": "DSotDQ",
+			"images": [
+				{
+					"type": "image",
+					"href": {
+						"type": "internal",
+						"path": "bestiary/DSotDQ/057-04-003.wyhan.webp"
+					},
+					"credit": "Olga Drebas"
 				}
 			]
 		}

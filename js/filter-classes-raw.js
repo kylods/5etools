@@ -357,7 +357,7 @@ class PageFilterClassesRaw extends PageFilterClassesBase {
 	static async _pGetIgnoredAndApplySideData (entity, type) {
 		if (!PageFilterClassesRaw._IMPLS_SIDE_DATA[type]) throw new Error(`Unhandled type "${type}"`);
 
-		const sideData = await PageFilterClassesRaw._IMPLS_SIDE_DATA[type].pGetSideLoadedMatch(entity, {prop: type, isSilent: true});
+		const sideData = await PageFilterClassesRaw._IMPLS_SIDE_DATA[type].pGetSideLoaded(entity, {isSilent: true});
 
 		if (!sideData) return false;
 		if (sideData.isIgnored) return true;
@@ -750,7 +750,7 @@ class ModalFilterClasses extends ModalFilter {
 
 			const $ovlLoading = $(`<div class="w-100 h-100 ve-flex-vh-center"><i class="dnd-font ve-muted">Loading...</i></div>`).appendTo($modalInner);
 
-			const $iptSearch = $(`<input class="form-control" type="search" placeholder="Search...">`);
+			const $iptSearch = $(`<input class="form-control h-100" type="search" placeholder="Search...">`);
 			const $btnReset = $(`<button class="btn btn-default">Reset</button>`);
 			const $wrpFormTop = $$`<div class="ve-flex input-group btn-group w-100 lst__form-top">${$iptSearch}${$btnReset}</div>`;
 
@@ -956,7 +956,7 @@ class ModalFilterClasses extends ModalFilter {
 
 		eleLabel.innerHTML = `<div class="col-1 pl-0 ve-flex-vh-center"><div class="fltr-cls__tgl"></div></div>
 		<div class="bold col-9 ${cls._versionBase_isVersion ? "italic" : ""}">${cls._versionBase_isVersion ? `<span class="px-3"></span>` : ""}${cls.name}</div>
-		<div class="col-2 pr-0 text-center ${Parser.sourceJsonToColor(cls.source)}" title="${Parser.sourceJsonToFull(cls.source)}" ${Parser.sourceJsonToStyle(cls.source)}>${source}</div>`;
+		<div class="col-2 pr-0 ve-text-center ${Parser.sourceJsonToColor(cls.source)}" title="${Parser.sourceJsonToFull(cls.source)}" ${Parser.sourceJsonToStyle(cls.source)}>${source}</div>`;
 
 		return new ListItem(
 			clsI,
@@ -980,7 +980,7 @@ class ModalFilterClasses extends ModalFilter {
 
 		eleLabel.innerHTML = `<div class="col-1 pl-0 ve-flex-vh-center"><div class="fltr-cls__tgl"></div></div>
 		<div class="col-9 pl-1 ve-flex-v-center ${sc._versionBase_isVersion ? "italic" : ""}">${sc._versionBase_isVersion ? `<span class="px-3"></span>` : ""}<span class="mx-3">\u2014</span> ${sc.name}</div>
-		<div class="col-2 pr-0 text-center ${Parser.sourceJsonToColor(sc.source)}" title="${Parser.sourceJsonToFull(sc.source)}" ${Parser.sourceJsonToStyle(sc.source)}>${source}</div>`;
+		<div class="col-2 pr-0 ve-text-center ${Parser.sourceJsonToColor(sc.source)}" title="${Parser.sourceJsonToFull(sc.source)}" ${Parser.sourceJsonToStyle(sc.source)}>${source}</div>`;
 
 		return new ListItem(
 			`${clsI}--${scI}`,

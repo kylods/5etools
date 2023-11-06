@@ -45,7 +45,8 @@
 				"Fey Ancestry",
 				"Magic Resistance"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Amanisha Manivarshi",
@@ -75,7 +76,8 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Ameyali",
@@ -105,12 +107,13 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Ashen Heir Anarchist",
 			"source": "JttRC",
-			"page": 158,
+			"page": 150,
 			"_copy": {
 				"name": "Priest",
 				"source": "MM",
@@ -122,7 +125,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Ashen Heir Assassin",
@@ -142,7 +146,8 @@
 				"name": "Mage",
 				"source": "MM"
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Ashen Heir Veteran",
@@ -176,7 +181,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Atiba-Pa",
@@ -206,7 +212,8 @@
 				"L",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Aunt Dellie",
@@ -226,7 +233,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Aurumvorax",
@@ -463,7 +471,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Azra Nir",
@@ -483,7 +492,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Bakunawa",
@@ -626,6 +636,11 @@
 				"blinded",
 				"restrained"
 			],
+			"savingThrowForced": [
+				"constitution",
+				"dexterity",
+				"strength"
+			],
 			"hasToken": true,
 			"hasFluff": true,
 			"hasFluffImages": true
@@ -652,7 +667,8 @@
 				"C",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Dinosaur Skeleton",
@@ -715,7 +731,8 @@
 					]
 				}
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Diva Luma",
@@ -749,7 +766,8 @@
 					]
 				}
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Djeneba",
@@ -779,7 +797,8 @@
 				"C",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Dragon Hunter",
@@ -839,7 +858,8 @@
 			"alignment": [
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Farmer",
@@ -857,7 +877,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Gammon Xungoon",
@@ -889,7 +910,8 @@
 				"Pack Tactics",
 				"Sunlight Sensitivity"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Haint",
@@ -1030,6 +1052,9 @@
 			"conditionInflict": [
 				"incapacitated"
 			],
+			"savingThrowForced": [
+				"wisdom"
+			],
 			"hasToken": true,
 			"hasFluff": true,
 			"hasFluffImages": true
@@ -1051,7 +1076,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Jijibisha Manivarshi",
@@ -1115,7 +1141,8 @@
 				"N",
 				"E"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Kasem Aroon",
@@ -1145,7 +1172,8 @@
 				"C",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Kedjou Kamal",
@@ -1175,7 +1203,8 @@
 				"N",
 				"E"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Kianna",
@@ -1205,7 +1234,8 @@
 				"C",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Koi Prawn",
@@ -1222,7 +1252,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Kun Ahn-Jun",
@@ -1252,7 +1283,8 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Kusa Xungoon",
@@ -1284,7 +1316,8 @@
 				"Pack Tactics",
 				"Sunlight Sensitivity"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Lady Dre",
@@ -1314,7 +1347,8 @@
 				"C",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Laleh Ghorbani",
@@ -1346,7 +1380,8 @@
 				"Fey Ancestry",
 				"Keen Senses"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Lamai Tyenmo",
@@ -1374,7 +1409,8 @@
 				"L",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Lu Zhong Yin",
@@ -1404,7 +1440,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Lungtian",
@@ -1428,7 +1465,8 @@
 				"C",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Madam Kulp",
@@ -1455,7 +1493,8 @@
 			"alignment": [
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Myx Nargis Ruba",
@@ -1486,7 +1525,8 @@
 			"traitTags": [
 				"Aggressive"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Navid",
@@ -1512,7 +1552,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Nene",
@@ -1537,7 +1578,8 @@
 			"languages": [
 				"Understands simple phrases and concepts in Common"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Nightsea chil-liren",
@@ -1601,7 +1643,8 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Ollin",
@@ -1643,7 +1686,8 @@
 				"CC",
 				"I"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Paloma",
@@ -1671,7 +1715,8 @@
 				"C",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Paolo Maykapal",
@@ -1691,7 +1736,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Pari",
@@ -1821,6 +1867,9 @@
 					]
 				}
 			],
+			"attachedItems": [
+				"mace|phb"
+			],
 			"traitTags": [
 				"Magic Resistance",
 				"Unusual Nature"
@@ -1844,7 +1893,14 @@
 				"O"
 			],
 			"miscTags": [
+				"MLW",
 				"MW"
+			],
+			"savingThrowForced": [
+				"wisdom"
+			],
+			"savingThrowForcedSpell": [
+				"charisma"
 			],
 			"hasToken": true,
 			"hasFluff": true,
@@ -1871,7 +1927,7 @@
 						"items": {
 							"name": "Royal Blood",
 							"entries": [
-								"If Kirina is reduced to half of his hit points or fewer, he uses the {@action dodge||Dodge} action to avoid taking further damage."
+								"If Kirina is reduced to half of his hit points or fewer, he uses the {@action Dodge} action to avoid taking further damage."
 							]
 						}
 					},
@@ -1887,7 +1943,8 @@
 			"ac": [
 				11
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Prince Simbon",
@@ -1910,7 +1967,7 @@
 						"items": {
 							"name": "Royal Blood",
 							"entries": [
-								"If Simbon is reduced to half of his hit points or fewer, he uses the {@action dodge||Dodge} action to avoid taking further damage."
+								"If Simbon is reduced to half of his hit points or fewer, he uses the {@action Dodge} action to avoid taking further damage."
 							]
 						}
 					},
@@ -1926,7 +1983,8 @@
 			"ac": [
 				11
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Riverine",
@@ -2083,6 +2141,12 @@
 			"conditionInflict": [
 				"prone"
 			],
+			"savingThrowForced": [
+				"dexterity"
+			],
+			"savingThrowForcedSpell": [
+				"strength"
+			],
 			"hasToken": true,
 			"hasFluff": true,
 			"hasFluffImages": true
@@ -2136,7 +2200,8 @@
 				"Fey Ancestry",
 				"Sneak Attack"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Serapio",
@@ -2156,7 +2221,8 @@
 					}
 				}
 			},
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Sholeh",
@@ -2180,7 +2246,9 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"conditionInflictLegendary": [],
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Soul Shaker",
@@ -2296,6 +2364,9 @@
 			],
 			"conditionInflict": [
 				"grappled"
+			],
+			"savingThrowForced": [
+				"constitution"
 			],
 			"hasToken": true,
 			"hasFluff": true,
@@ -2422,6 +2493,9 @@
 			"conditionInflict": [
 				"exhaustion",
 				"poisoned"
+			],
+			"savingThrowForced": [
+				"constitution"
 			],
 			"hasToken": true,
 			"hasFluff": true,
@@ -2551,6 +2625,10 @@
 			"conditionInflict": [
 				"prone"
 			],
+			"savingThrowForced": [
+				"dexterity",
+				"strength"
+			],
 			"hasToken": true,
 			"hasFluff": true,
 			"hasFluffImages": true
@@ -2581,7 +2659,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Tungsten Ward",
@@ -2611,7 +2690,8 @@
 				"L",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Uzoma Baten",
@@ -2639,7 +2719,8 @@
 				"L",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Vi Aroon",
@@ -2669,7 +2750,8 @@
 				"C",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Wei Feng Ying",
@@ -2699,7 +2781,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Whistler",
@@ -2823,6 +2906,9 @@
 			"conditionInflict": [
 				"frightened"
 			],
+			"savingThrowForced": [
+				"wisdom"
+			],
 			"hasToken": true,
 			"hasFluff": true,
 			"hasFluffImages": true
@@ -2837,7 +2923,7 @@
 				"name": "Noble",
 				"source": "MM",
 				"_trait": {
-					"name": "Mountain Dwarf",
+					"name": "Hill Dwarf",
 					"source": "PHB"
 				},
 				"_mod": {
@@ -2852,7 +2938,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Wynling",
@@ -2980,7 +3067,8 @@
 			"alignment": [
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Yarana",
@@ -3010,7 +3098,8 @@
 				"N",
 				"G"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Young-Gi",
@@ -3037,7 +3126,8 @@
 			"alignment": [
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		},
 		{
 			"name": "Zisatta",
@@ -3061,7 +3151,8 @@
 				"L",
 				"N"
 			],
-			"hasToken": true
+			"hasToken": true,
+			"hasFluffImages": true
 		}
 	]
 }

@@ -164,7 +164,6 @@ class _DataLoaderDereferencerClassSubclassFeatures extends _DataLoaderDereferenc
 		const cpy = this._getCopyFromCache({page: prop, entriesWithoutRefs, refUnpacked, refHash});
 		if (!cpy) return new this.constructor._DereferenceMeta({cntReplaces: 0});
 
-		delete cpy.level;
 		delete cpy.header;
 		if (toReplaceMeta.name) cpy.name = toReplaceMeta.name;
 		toReplaceMeta.array[toReplaceMeta.ix] = cpy;
@@ -471,6 +470,11 @@ class _DataLoaderDereferencer {
 // region Cache
 
 class _DataLoaderCache {
+	static _PARTITION_UNKNOWN = 0;
+	static _PARTITION_SITE = 1;
+	static _PARTITION_PRERELEASE = 2;
+	static _PARTITION_BREW = 3;
+
 	_cache = {};
 	_cacheSiteLists = {};
 	_cachePrereleaseLists = {};
@@ -512,36 +516,60 @@ class _DataLoaderCache {
 		if (ent === _DataLoaderConst.ENTITY_NULL) return;
 
 		// region Set site/prerelease/brew list cache
-		const sourceJson = Parser.sourceJsonToJson(sourceClean);
-		if (SourceUtil.isSiteSource(sourceJson)) {
-			this._set_addToPartition({
-				cache: this._cacheSiteLists,
-				pageClean,
-				hashClean,
-				ent,
-			});
-			return;
-		}
+		switch (this._set_getPartition(ent)) {
+			case this.constructor._PARTITION_SITE: {
+				return this._set_addToPartition({
+					cache: this._cacheSiteLists,
+					pageClean,
+					hashClean,
+					ent,
+				});
+			}
 
-		if (PrereleaseUtil.hasSourceJson(sourceJson)) {
-			this._set_addToPartition({
-				cache: this._cachePrereleaseLists,
-				pageClean,
-				hashClean,
-				ent,
-			});
-			return;
-		}
+			case this.constructor._PARTITION_PRERELEASE: {
+				return this._set_addToPartition({
+					cache: this._cachePrereleaseLists,
+					pageClean,
+					hashClean,
+					ent,
+				});
+			}
 
-		if (BrewUtil2.hasSourceJson(sourceJson)) {
-			this._set_addToPartition({
-				cache: this._cacheBrewLists,
-				pageClean,
-				hashClean,
-				ent,
-			});
+			case this.constructor._PARTITION_BREW: {
+				return this._set_addToPartition({
+					cache: this._cacheBrewLists,
+					pageClean,
+					hashClean,
+					ent,
+				});
+			}
+
+			// Skip by default
 		}
 		// endregion
+	}
+
+	_set_getPartition (ent) {
+		if (ent.__prop !== "item" || ent._category !== "Specific Variant") return this._set_getPartition_fromSource(SourceUtil.getEntitySource(ent));
+
+		// "Specific Variant" items have a dual source. For the purposes of partitioning:
+		//   - only items with both `baseitem` source and `magicvariant` source both "site" sources
+		//   - items which include any brew are treated as brew
+		//   - items which include any prerelease (and no brew) are treated as prerelease
+		const entitySource = SourceUtil.getEntitySource(ent);
+		const partitionBaseitem = this._set_getPartition_fromSource(entitySource);
+		const partitionMagicvariant = this._set_getPartition_fromSource(ent._baseSource ?? entitySource);
+
+		if (partitionBaseitem === partitionMagicvariant && partitionBaseitem === this.constructor._PARTITION_SITE) return this.constructor._PARTITION_SITE;
+		if (partitionBaseitem === this.constructor._PARTITION_BREW || partitionMagicvariant === this.constructor._PARTITION_BREW) return this.constructor._PARTITION_BREW;
+		return this.constructor._PARTITION_PRERELEASE;
+	}
+
+	_set_getPartition_fromSource (partitionSource) {
+		if (SourceUtil.isSiteSource(partitionSource)) return this.constructor._PARTITION_SITE;
+		if (PrereleaseUtil.hasSourceJson(partitionSource)) return this.constructor._PARTITION_PRERELEASE;
+		if (BrewUtil2.hasSourceJson(partitionSource)) return this.constructor._PARTITION_BREW;
+		return this.constructor._PARTITION_UNKNOWN;
 	}
 
 	_set_addToPartition ({cache, pageClean, hashClean, ent}) {
@@ -770,6 +798,18 @@ class _DataTypeLoaderItemEntry extends _DataTypeLoaderSingleSource {
 	_filename = "items-base.json";
 }
 
+class _DataTypeLoaderItemMastery extends _DataTypeLoaderSingleSource {
+	static PROPS = ["itemMastery"];
+
+	_filename = "items-base.json";
+
+	async _pPrePopulate ({data, isPrerelease, isBrew}) {
+		// Ensure properties are loaded
+		await Renderer.item.pGetSiteUnresolvedRefItems();
+		Renderer.item.addPrereleaseBrewPropertiesAndTypesFrom({data});
+	}
+}
+
 class _DataTypeLoaderBackgroundFluff extends _DataTypeLoaderSingleSource {
 	static PROPS = ["backgroundFluff"];
 	static PAGE = UrlUtil.PG_BACKGROUNDS;
@@ -874,7 +914,7 @@ class _DataTypeLoaderPredefined extends _DataTypeLoader {
 }
 
 class _DataTypeLoaderRace extends _DataTypeLoaderPredefined {
-	static PROPS = ["race", "subrace"];
+	static PROPS = [...UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_RACES]];
 	static PAGE = UrlUtil.PG_RACES;
 
 	_loader = "race";
@@ -921,17 +961,30 @@ class _DataTypeLoaderRecipe extends _DataTypeLoaderPredefined {
 class _DataTypeLoaderMultiSource extends _DataTypeLoader {
 	_prop;
 
-	_getSiteIdent ({pageClean, sourceClean}) { return `${this._prop}__${sourceClean}`; }
+	_getSiteIdent ({pageClean, sourceClean}) {
+		// use `.toString()` in case `sourceClean` is a `Symbol`
+		return `${this._prop}__${sourceClean.toString()}`;
+	}
 
 	async _pGetSiteData ({pageClean, sourceClean}) {
-		const source = Parser.sourceJsonToJson(sourceClean);
-		const data = await DataUtil[this._prop].pLoadSingleSource(source);
+		const data = await this._pGetSiteData_data({sourceClean});
 
 		if (data == null) return {};
 
 		await this._pPrePopulate({data});
 
 		return data;
+	}
+
+	async _pGetSiteData_data ({sourceClean}) {
+		if (sourceClean === _DataLoaderConst.SOURCE_SITE_ALL) return this._pGetSiteDataAll();
+
+		const source = Parser.sourceJsonToJson(sourceClean);
+		return DataUtil[this._prop].pLoadSingleSource(source);
+	}
+
+	async _pGetSiteDataAll () {
+		return DataUtil[this._prop].loadJSON();
 	}
 }
 
@@ -960,7 +1013,7 @@ class _DataTypeLoaderCustomMonsterFluff extends _DataTypeLoaderMultiSource {
 }
 
 class _DataTypeLoaderCustomSpell extends _DataTypeLoaderMultiSource {
-	static PROPS = ["spell"];
+	static PROPS = [...UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_SPELLS]];
 	static PAGE = UrlUtil.PG_SPELLS;
 
 	_prop = "spell";
@@ -1199,7 +1252,7 @@ class _DataTypeLoaderCustomClassSubclassFeature extends _DataTypeLoader {
 }
 
 class _DataTypeLoaderCustomItem extends _DataTypeLoader {
-	static PROPS = ["item", "itemGroup", "itemType", "itemEntry", "itemProperty", "itemTypeAdditionalEntries", "baseitem", "magicvariant"];
+	static PROPS = [...UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_ITEMS]];
 	static PAGE = UrlUtil.PG_ITEMS;
 
 	/**
@@ -1222,12 +1275,16 @@ class _DataTypeLoaderCustomItem extends _DataTypeLoader {
 	}
 
 	async _pGetStoredPrereleaseBrewData ({brewUtil, isPrerelease, isBrew}) {
-		const prereleaseBrew = await brewUtil.pGetBrewProcessed();
-
+		const prereleaseBrewData = await brewUtil.pGetBrewProcessed();
+		await this._pPrePopulate({data: prereleaseBrewData, isPrerelease, isBrew});
 		return {
-			item: await Renderer.item.pGetSiteUnresolvedRefItemsFromPrereleaseBrew({brewUtil, brew: prereleaseBrew}),
-			itemEntry: prereleaseBrew.itemEntry || [],
+			item: await Renderer.item.pGetSiteUnresolvedRefItemsFromPrereleaseBrew({brewUtil, brew: prereleaseBrewData}),
+			itemEntry: prereleaseBrewData.itemEntry || [],
 		};
+	}
+
+	async _pPrePopulate ({data, isPrerelease, isBrew}) {
+		Renderer.item.addPrereleaseBrewPropertiesAndTypesFrom({data});
 	}
 
 	async _pGetPostCacheData_obj ({siteData, obj, lockToken2}) {
@@ -1487,6 +1544,16 @@ class _DataTypeLoaderCustomBook extends _DataTypeLoaderCustomAdventureBook {
 	_filename = "books.json";
 }
 
+class _DataTypeLoaderCitation extends _DataTypeLoader {
+	static PROPS = ["citation"];
+
+	_getSiteIdent ({pageClean, sourceClean}) { return this.constructor.name; }
+
+	async _pGetSiteData ({pageClean, sourceClean}) {
+		return {citation: []};
+	}
+}
+
 // endregion
 
 /* -------------------------------------------- */
@@ -1616,6 +1683,8 @@ class DataLoader {
 		_DataTypeLoaderSense.register({fnRegister});
 		_DataTypeLoaderLegendaryGroup.register({fnRegister});
 		_DataTypeLoaderItemEntry.register({fnRegister});
+		_DataTypeLoaderItemMastery.register({fnRegister});
+		_DataTypeLoaderCitation.register({fnRegister});
 		// endregion
 
 		// region Fluff
@@ -2028,7 +2097,7 @@ class DataLoader {
 		ent.__prop = ent.__prop || prop;
 
 		const page = this._PROP_TO_HASH_PAGE[prop];
-		const source = SourceUtil.getEntitySource(ent);
+		const source = SourceUtil.getEntitySource(ent); //
 		const hash = hashBuilder(ent);
 
 		const {page: propClean, source: sourceClean, hash: hashClean} = _DataLoaderInternalUtil.getCleanPageSourceHash({page: prop, source, hash});

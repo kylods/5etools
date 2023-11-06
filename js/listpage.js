@@ -29,17 +29,93 @@ class _UtilListPage {
 	}
 }
 
+class SublistCellTemplate {
+	constructor (
+		{
+			name,
+			css,
+			colStyle,
+		},
+	) {
+		this._name = name;
+		this._css = css;
+		this._colStyle = colStyle;
+	}
+
+	get name () { return this._name; }
+	get colStyle () { return this._colStyle; }
+
+	getCss (text) {
+		return [
+			this._css,
+			text === VeCt.STR_NONE
+				? "list-entry-none"
+				: "",
+		]
+			.filter(Boolean)
+			.join(" ");
+	}
+}
+
+class SublistCell {
+	constructor (
+		{
+			text,
+			title,
+			css,
+			style,
+		},
+	) {
+		this._text = text;
+		this._title = title;
+		this._css = css;
+		this._style = style;
+	}
+
+	static renderHtml ({templates, cell, ix}) {
+		const text = cell instanceof SublistCell ? cell._text : cell;
+		const title = cell instanceof SublistCell ? cell._title : null;
+		const cssCell = cell instanceof SublistCell ? cell._css : null;
+		const style = cell instanceof SublistCell ? cell._style : null;
+
+		const css = [
+			templates[ix].getCss(text),
+			cssCell,
+		]
+			.filter(Boolean)
+			.join(" ");
+
+		const attrs = [
+			`class="${css}"`,
+			title ? `title="${title.qq()}"` : "",
+			style ? `style="${style}"` : "",
+		]
+			.filter(Boolean)
+			.join(" ");
+
+		return `<span ${attrs}>${text}</span>`;
+	}
+
+	static renderMarkdown ({listItem, cell}) {
+		cell = (typeof cell === "function") ? cell({listItem}) : cell;
+		return (cell instanceof SublistCell) ? cell._text : cell;
+	}
+}
+
 class SublistManager {
 	static _SUB_HASH_PREFIX = "sublistselected";
 
 	/**
-	 * @param opts.sublistClass Sublist class.
+	 * @param [opts]
+	 * @param [opts.sublistClass] Sublist class.
 	 * @param [opts.sublistListOptions] Other sublist options.
 	 * @param [opts.isSublistItemsCountable] If the sublist items should be countable, i.e. have a quantity.
 	 * @param [opts.shiftCountAddSubtract] If the sublist items should be countable, i.e. have a quantity.
 	 */
 	constructor (opts) {
-		this._sublistClass = opts.sublistClass;
+		opts = opts || {};
+
+		this._sublistClass = opts.sublistClass; // TODO(PageGen) remove once all pages transitioned
 		this._sublistListOptions = opts.sublistListOptions || {};
 		this._isSublistItemsCountable = !!opts.isSublistItemsCountable;
 		this._shiftCountAddSubtract = opts.shiftCountAddSubtract ?? 20;
@@ -84,7 +160,7 @@ class SublistManager {
 
 		this._listSub = new List({
 			...this._sublistListOptions,
-			$wrpList: $(`.${this._sublistClass}`),
+			$wrpList: this._sublistClass ? $(`.${this._sublistClass}`) : $(`#sublist`),
 			isUseJquery: true,
 		});
 
@@ -93,7 +169,7 @@ class SublistManager {
 
 		if (this._$wrpContainer.hasClass(`sublist--resizable`)) this._pBindSublistResizeHandlers();
 
-		this._$wrpSummaryControls = this._saveManager.$getRenderedSummary({
+		const {$wrp: $wrpSummaryControls, cbOnListUpdated} = this._saveManager.$getRenderedSummary({
 			cbOnNew: (evt) => this.pHandleClick_new(evt),
 			cbOnDuplicate: (evt) => this.pHandleClick_duplicate(evt),
 			cbOnSave: (evt) => this.pHandleClick_save(evt),
@@ -101,6 +177,12 @@ class SublistManager {
 			cbOnReset: (evt, exportedSublist) => this.pDoLoadExportedSublist(exportedSublist),
 			cbOnUpload: (evt) => this.pHandleClick_upload({isAdditive: evt.shiftKey}),
 		});
+
+		this._$wrpSummaryControls = $wrpSummaryControls;
+
+		const hkOnListUpdated = () => cbOnListUpdated({cntVisibleItems: this._listSub.visibleItems.length});
+		this._listSub.on("updated", hkOnListUpdated);
+		hkOnListUpdated();
 
 		this._$wrpContainer.after(this._$wrpSummaryControls);
 
@@ -159,7 +241,7 @@ class SublistManager {
 		return this._isSublistItemsCountable
 			? new ContextUtil.Action(
 				"Remove",
-				async (evt, userData) => {
+				async (evt, {userData}) => {
 					const {selection} = userData;
 					await Promise.all(selection.map(item => this.pDoSublistRemove({entity: item.data.entity, doFinalize: false})));
 					await this._pFinaliseSublist();
@@ -167,7 +249,7 @@ class SublistManager {
 			)
 			: new ContextUtil.Action(
 				"Unpin",
-				async (evt, userData) => {
+				async (evt, {userData}) => {
 					const {selection} = userData;
 					for (const item of selection) {
 						await this.pDoSublistRemove({entity: item.data.entity, doFinalize: false});
@@ -181,7 +263,7 @@ class SublistManager {
 		const subActions = [
 			new ContextUtil.Action(
 				"Popout",
-				(evt, userData) => {
+				(evt, {userData}) => {
 					const {ele, selection} = userData;
 					const entities = selection.map(listItem => ({entity: listItem.data.entity, hash: listItem.values.hash}));
 					return _UtilListPage.pDoMassPopout(evt, ele, entities);
@@ -215,6 +297,11 @@ class SublistManager {
 				"Download JSON Data",
 				() => this._pHandleJsonDownload(),
 			),
+			null,
+			new ContextUtil.Action(
+				"Copy as Markdown Table",
+				() => this._pHandleCopyAsMarkdownTable(),
+			),
 		].filter(it => it !== undefined);
 		this._contextMenuListSub = ContextUtil.getMenu(subActions);
 	}
@@ -231,7 +318,7 @@ class SublistManager {
 		}
 
 		const ele = listItem.ele instanceof $ ? listItem.ele[0] : listItem.ele;
-		ContextUtil.pOpenMenu(evt, menu, {ele: ele, selection});
+		ContextUtil.pOpenMenu(evt, menu, {userData: {ele: ele, selection}});
 	}
 
 	pGetSublistItem () { throw new Error(`Unimplemented!`); }
@@ -376,6 +463,22 @@ class SublistManager {
 		const entities = await this.getPinnedEntities();
 		entities.forEach(ent => DataUtil.cleanJson(MiscUtil.copyFast(ent)));
 		DataUtil.userDownload(`${this._getDownloadName()}-data`, entities);
+	}
+
+	async _pHandleCopyAsMarkdownTable () {
+		await MiscUtil.pCopyTextToClipboard(
+			RendererMarkdown.get()
+				.render({
+					type: "table",
+					colStyles: this.constructor._getRowEntryColStyles(),
+					colLabels: this.constructor._getRowEntryColLabels(),
+					rows: this._listSub.items
+						.map(listItem => {
+							return listItem.data.mdRow
+								.map(cell => SublistCell.renderMarkdown({listItem, cell}));
+						}),
+				}),
+		);
 	}
 
 	async pHandleClick_new (evt) {
@@ -723,6 +826,29 @@ class SublistManager {
 	}
 
 	doSublistDeselectAll () { this._listSub.deselectAll(); }
+
+	/* -------------------------------------------- */
+
+	static get _ROW_TEMPLATE () { throw new Error("Unimplemented"); }
+
+	static _doValidateRowTemplateValues ({values, templates}) {
+		if (values.length !== templates.length) throw new Error(`Length of row template and row values did not match! This is a bug!`);
+	}
+
+	/**
+	 * @param values
+	 * @param {Array<SublistCellTemplate>} templates
+	 */
+	static _getRowCellsHtml ({values, templates = null}) {
+		templates = templates || this._ROW_TEMPLATE;
+		this._doValidateRowTemplateValues({values, templates});
+		return values
+			.map((val, i) => SublistCell.renderHtml({templates, cell: val, ix: i}))
+			.join("");
+	}
+
+	static _getRowEntryColLabels () { return this._ROW_TEMPLATE.map(it => it.name); }
+	static _getRowEntryColStyles () { return this._ROW_TEMPLATE.map(it => it.colStyle); }
 }
 
 class ListPageStateManager extends BaseComponent {
@@ -836,16 +962,17 @@ class ListPage {
 	 * `pageFilter` must be specified.)
 	 * @param [opts.pageFilter] PageFilter implementation for this page. (Either `filters` and `filterSource` or
 	 * `pageFilter` must be specified.)
-	 * @param opts.listClass List class.
+	 * @param [opts.listClass] List class.
 	 * @param opts.listOptions Other list options.
 	 * @param opts.dataProps JSON data propert(y/ies).
+	 *
 	 * @param [opts.bookViewOptions] Book view options.
-	 * @param [opts.bookViewOptions.$btnOpen]
-	 * @param [opts.bookViewOptions.$eleNoneVisible]
+	 * @param [opts.bookViewOptions.ClsBookView]
 	 * @param [opts.bookViewOptions.pageTitle]
-	 * @param [opts.bookViewOptions.popTblGetNumShown]
-	 * @param [opts.bookViewOptions.fnSort]
-	 * @param [opts.bookViewOptions.fnGetMd]
+	 * @param [opts.bookViewOptions.namePlural]
+	 * @param [opts.bookViewOptions.propMarkdown]
+	 * @param [opts.bookViewOptions.fnPartition]
+	 *
 	 * @param [opts.tableViewOptions] Table view options.
 	 * @param [opts.hasAudio] True if the entities have pronunciation audio.
 	 * @param [opts.isPreviewable] True if the entities can be previewed in-line as part of the list.
@@ -865,7 +992,7 @@ class ListPage {
 		this._filters = opts.filters;
 		this._filterSource = opts.filterSource;
 		this._pageFilter = opts.pageFilter;
-		this._listClass = opts.listClass;
+		this._listClass = opts.listClass; // TODO(PageGen) remove once all pages transitioned
 		this._listOptions = opts.listOptions || {};
 		this._dataProps = opts.dataProps;
 		this._bookViewOptions = opts.bookViewOptions;
@@ -879,6 +1006,7 @@ class ListPage {
 		this._listSyntax = opts.listSyntax || new ListUiUtil.ListSyntax({fnGetDataList: () => this._dataList, pFnGetFluff: opts.pFnGetFluff});
 		this._compSettings = opts.compSettings ? opts.compSettings : null;
 
+		this._lockHashchange = new VeLock({name: "hashchange"});
 		this._renderer = Renderer.get();
 		this._list = null;
 		this._filterBox = null;
@@ -999,7 +1127,7 @@ class ListPage {
 		const $btnReset = $("#reset");
 		this._list = this._initList({
 			$iptSearch,
-			$wrpList: $(`.list.${this._listClass}`),
+			$wrpList: this._listClass ? $(`.list.${this._listClass}`) : $(`#list`),
 			$btnReset,
 			$btnClear: $(`#lst__search-glass`),
 			dispPageTagline: document.getElementById(`page__subtitle`),
@@ -1056,94 +1184,12 @@ class ListPage {
 	_pOnLoad_bookView () {
 		if (!this._bookViewOptions) return;
 
-		this._bookView = new BookModeView({
-			hashKey: "bookview",
-			$openBtn: this._bookViewOptions.$btnOpen,
-			$eleNoneVisible: this._bookViewOptions.$eleNoneVisible,
-			pageTitle: this._bookViewOptions.pageTitle || "Book View",
-			popTblGetNumShown: this._bookView_popTblGetNumShown.bind(this),
-			hasPrintColumns: true,
+		this._bookView = new (this._bookViewOptions.ClsBookView || ListPageBookView)({
+			...this._bookViewOptions,
+			sublistManager: this._sublistManager,
+			fnGetEntLastLoaded: () => this._dataList[Hist.lastLoadedId],
+			$btnOpen: $(`#btn-book`),
 		});
-	}
-
-	_bookView_popTblGetNumShown ({$wrpContent, $dispName, $wrpControls, fnPartition}) {
-		if (this._bookViewOptions.fnGetMd) this._bookView_$getControlsMarkdown().appendTo($wrpControls);
-
-		this._bookViewToShow = this._sublistManager.getSublistedEntities();
-
-		const fnRender = Renderer.hover.getFnRenderCompact(UrlUtil.getCurrentPage(), {isStatic: true});
-
-		const stack = [];
-		const renderEnt = (p) => {
-			stack.push(`<div class="bkmv__wrp-item"><table class="w-100 stats stats--book stats--bkmv"><tbody>`);
-			stack.push(fnRender(p));
-			stack.push(`</tbody></table></div>`);
-		};
-
-		const renderPartition = (dataArr) => {
-			dataArr.forEach(it => renderEnt(it));
-		};
-
-		const partitions = [];
-		if (fnPartition) {
-			this._bookViewToShow.forEach(it => {
-				const partition = fnPartition(it);
-				(partitions[partition] = partitions[partition] || []).push(it);
-			});
-		} else partitions[0] = this._bookViewToShow;
-		partitions.filter(Boolean).forEach(arr => renderPartition(arr));
-
-		if (!this._bookViewToShow.length && Hist.lastLoadedId != null) {
-			renderEnt(this._dataList[Hist.lastLoadedId]);
-		}
-
-		$wrpContent.append(stack.join(""));
-		return this._bookViewToShow.length;
-	}
-
-	_bookView_getAsMarkdown () {
-		const fnSort = this._bookViewOptions.fnSort || ((a, b) => SortUtil.ascSortLower(a.name, b.name));
-
-		const toRender = this._bookViewToShow?.length ? this._bookViewToShow : [this._dataList[Hist.lastLoadedId]];
-		const parts = [...toRender]
-			.sort(fnSort)
-			.map(this._bookViewOptions.fnGetMd);
-
-		const out = [];
-		let charLimit = RendererMarkdown.CHARS_PER_PAGE;
-		for (let i = 0; i < parts.length; ++i) {
-			const part = parts[i];
-			out.push(part);
-
-			if (i < parts.length - 1) {
-				if ((charLimit -= part.length) < 0) {
-					if (RendererMarkdown.getSetting("isAddPageBreaks")) out.push("", "\\pagebreak", "");
-					charLimit = RendererMarkdown.CHARS_PER_PAGE;
-				}
-			}
-		}
-
-		return out.join("\n\n");
-	}
-
-	_bookView_$getControlsMarkdown () {
-		const $btnDownloadMarkdown = $(`<button class="btn btn-default btn-sm">Download as Markdown</button>`)
-			.click(() => DataUtil.userDownloadText(`${UrlUtil.getCurrentPage().replace(".html", "")}.md`, this._bookView_getAsMarkdown()));
-
-		const $btnCopyMarkdown = $(`<button class="btn btn-default btn-sm px-2" title="Copy Markdown to Clipboard"><span class="glyphicon glyphicon-copy"/></button>`)
-			.click(async () => {
-				await MiscUtil.pCopyTextToClipboard(this._bookView_getAsMarkdown());
-				JqueryUtil.showCopiedEffect($btnCopyMarkdown);
-			});
-
-		const $btnDownloadMarkdownSettings = $(`<button class="btn btn-default btn-sm px-2" title="Markdown Settings"><span class="glyphicon glyphicon-cog"/></button>`)
-			.click(async () => RendererMarkdown.pShowSettingsModal());
-
-		return $$`<div class="ve-flex-v-center btn-group ml-3">
-			${$btnDownloadMarkdown}
-			${$btnCopyMarkdown}
-			${$btnDownloadMarkdownSettings}
-		</div>`;
 	}
 
 	_pOnLoad_tableView () {
@@ -1326,8 +1372,8 @@ class ListPage {
 			.on("click", async evt => {
 				let url = window.location.href;
 
-				if (evt.ctrlKey || evt.metaKey) {
-					await MiscUtil.pCopyTextToClipboard(this._filterBox.getFilterTag());
+				if (EventUtil.isCtrlMetaKey(evt)) {
+					await MiscUtil.pCopyTextToClipboard(this._filterBox.getFilterTag({isAddSearchTerm: true}));
 					JqueryUtil.showCopiedEffect($btn);
 					return;
 				}
@@ -1354,7 +1400,7 @@ class ListPage {
 				(evt) => {
 					if (Hist.lastLoadedId === null) return;
 
-					if (this._isMarkdownPopout && (evt.ctrlKey || evt.metaKey)) return this._bindPopoutButton_doShowMarkdown(evt);
+					if (this._isMarkdownPopout && (EventUtil.isCtrlMetaKey(evt))) return this._bindPopoutButton_doShowMarkdown(evt);
 					return this._bindPopoutButton_doShowStatblock(evt);
 				},
 			);
@@ -1530,16 +1576,20 @@ class ListPage {
 			return;
 		}
 
-		let tgtItemOtherList = null;
-		for (let i = it.x + dir; i >= 0 && i < lists.length; i += dir) {
-			if (!lists[i]?.visibleItems?.length) continue;
+		let ixListOther = it.x + dir;
 
-			tgtItemOtherList = dir === 1 ? lists[i].visibleItems[0] : lists[i].visibleItems.last();
-		}
+		if (ixListOther === -1) ixListOther = lists.length - 1;
+		else if (ixListOther === lists.length) ixListOther = 0;
 
-		if (tgtItemOtherList) {
+		for (; ixListOther >= 0 && ixListOther < lists.length; ixListOther += dir) {
+			if (!lists[ixListOther]?.visibleItems?.length) continue;
+
+			const tgtItemOtherList = dir === 1 ? lists[ixListOther].visibleItems[0] : lists[ixListOther].visibleItems.last();
+			if (!tgtItemOtherList) continue;
+
 			window.location.hash = tgtItemOtherList.values.hash;
 			this._initList_scrollToItem();
+			return;
 		}
 	}
 
@@ -1567,7 +1617,7 @@ class ListPage {
 			selection = [listItem];
 		}
 
-		ContextUtil.pOpenMenu(evt, this._contextMenuList, {ele: listItem.ele, selection});
+		ContextUtil.pOpenMenu(evt, this._contextMenuList, {userData: {ele: listItem.ele, selection}});
 	}
 
 	_initContextMenu () {
@@ -1576,7 +1626,7 @@ class ListPage {
 		this._contextMenuList = ContextUtil.getMenu([
 			new ContextUtil.Action(
 				"Popout",
-				async (evt, userData) => {
+				async (evt, {userData}) => {
 					const {ele, selection} = userData;
 					await this._handleGenericContextMenuClick_pDoMassPopout(evt, ele, selection);
 				},
@@ -1616,8 +1666,8 @@ class ListPage {
 
 	_getContextActionBlocklist () {
 		return new ContextUtil.Action(
-			"Add to Blocklist",
-			async (evt, userData) => {
+			"Blocklist",
+			async (evt, {userData}) => {
 				const {ele, selection} = userData;
 				await this._handleGenericContextMenuClick_pDoMassBlocklist(evt, ele, selection);
 			},
@@ -1737,7 +1787,7 @@ class ListPage {
 		contextOptions.push(
 			null,
 			new ContextUtil.Action(
-				"Add to Blocklist",
+				"Blocklist",
 				async () => {
 					await this._pDoMassBlocklist([this._dataList[Hist.lastLoadedId]]);
 				},
@@ -1776,18 +1826,26 @@ class ListPage {
 
 	doDeselectAll () { this.primaryLists.forEach(list => list.deselectAll()); }
 
-	async pDoLoadHash (id) {
-		this._lastRender.entity = this._dataList[id];
-		await this._pDoLoadHash(id);
+	async pDoLoadHash (id, {lockToken} = {}) {
+		try {
+			lockToken = await this._lockHashchange.pLock({token: lockToken});
+			this._lastRender.entity = this._dataList[id];
+			return (await this._pDoLoadHash({id, lockToken}));
+		} finally {
+			this._lockHashchange.unlock();
+		}
 	}
 
 	getListItem () { throw new Error(`Unimplemented!`); }
 	pHandleUnknownHash () { throw new Error(`Unimplemented!`); }
 
-	async pDoLoadSubHash (sub) {
-		if (this._filterBox) sub = this._filterBox.setFromSubHashes(sub);
-		if (this._sublistManager) sub = await this._sublistManager.pSetFromSubHashes(sub);
-		return sub;
+	async pDoLoadSubHash (sub, {lockToken} = {}) {
+		try {
+			lockToken = await this._lockHashchange.pLock({token: lockToken});
+			return (await this._pDoLoadSubHash({sub, lockToken}));
+		} finally {
+			this._lockHashchange.unlock();
+		}
 	}
 
 	/* -------------------------------------------- */
@@ -1802,7 +1860,7 @@ class ListPage {
 
 	_tabTitleStats = "Traits";
 
-	async _pDoLoadHash (id) {
+	async _pDoLoadHash ({id, lockToken}) {
 		this._$pgContent.empty();
 
 		this._renderer.setFirstSection(true);
@@ -1831,6 +1889,15 @@ class ListPage {
 			tabMetaStats,
 			tabMetasAdditional,
 		});
+	}
+
+	async _pPreloadSublistSources (json) { /* Implement as required */ }
+
+	async _pDoLoadSubHash ({sub, lockToken}) {
+		if (this._filterBox) sub = this._filterBox.setFromSubHashes(sub);
+		if (this._sublistManager) sub = await this._sublistManager.pSetFromSubHashes(sub, this._pPreloadSublistSources.bind(this));
+		if (this._bookView) sub = await this._bookView.pHandleSub(sub);
+		return sub;
 	}
 
 	_renderStats_getTabMetasAdditional ({ent}) { return []; }
@@ -1923,4 +1990,136 @@ class ListPage {
 
 	/** @abstract */
 	_renderStats_doBuildStatsTab ({ent}) { throw new Error("Unimplemented!"); }
+}
+
+class ListPageBookView extends BookModeViewBase {
+	_hashKey = "bookview";
+	_hasPrintColumns = true;
+
+	constructor (
+		{
+			sublistManager,
+			fnGetEntLastLoaded,
+			pageTitle,
+			namePlural,
+			propMarkdown,
+			fnPartition = null,
+			...rest
+		},
+	) {
+		super({...rest});
+		this._sublistManager = sublistManager;
+		this._fnGetEntLastLoaded = fnGetEntLastLoaded;
+		this._pageTitle = pageTitle;
+		this._namePlural = namePlural;
+		this._propMarkdown = propMarkdown;
+		this._fnPartition = fnPartition;
+
+		this._bookViewToShow = null;
+	}
+
+	_$getEleNoneVisible () {
+		return $$`<div class="w-100 ve-flex-col ve-flex-h-center no-shrink no-print mb-3 mt-auto">
+			<div class="mb-2 ve-flex-vh-center min-h-0">
+				<span class="initial-message">If you wish to view multiple ${this._namePlural}, please first make a list</span>
+			</div>
+			<div class="ve-flex-vh-center">${this._$getBtnNoneVisibleClose()}</div>
+		</div>`;
+	}
+
+	async _$pGetWrpControls ({$wrpContent}) {
+		const out = await super._$pGetWrpControls({$wrpContent});
+		const {$wrpPrint} = out;
+		if (this._propMarkdown) this._$getControlsMarkdown().appendTo($wrpPrint);
+		return out;
+	}
+
+	async _pGetRenderContentMeta ({$wrpContent, $wrpContentOuter}) {
+		$wrpContent.addClass("p-2");
+
+		this._bookViewToShow = this._sublistManager.getSublistedEntities()
+			.sort(this._getSorted.bind(this));
+
+		const partitions = [];
+		if (this._fnPartition) {
+			this._bookViewToShow.forEach(it => {
+				const partition = this._fnPartition(it);
+				(partitions[partition] = partitions[partition] || []).push(it);
+			});
+		} else partitions[0] = this._bookViewToShow;
+
+		const stack = partitions
+			.filter(Boolean)
+			.flatMap(arr => arr.map(ent => this._getRenderedEnt(ent)));
+
+		if (!this._bookViewToShow.length && Hist.lastLoadedId != null) {
+			stack.push(this._getRenderedEnt(this._fnGetEntLastLoaded()));
+		}
+
+		$wrpContent.append(stack.join(""));
+
+		return {
+			cntSelectedEnts: this._bookViewToShow.length,
+			isAnyEntityRendered: !!stack.length,
+		};
+	}
+
+	_getRenderedEnt (ent) {
+		return `<div class="bkmv__wrp-item ve-inline-block print__ve-block print__my-2">
+			<table class="w-100 stats stats--book stats--bkmv"><tbody>
+			${Renderer.hover.getFnRenderCompact(UrlUtil.getCurrentPage(), {isStatic: true})(ent)}
+			</tbody></table>
+		</div>`;
+	}
+
+	_getVisibleAsMarkdown () {
+		const toRender = this._bookViewToShow?.length ? this._bookViewToShow : [this._fnGetEntLastLoaded()];
+		const parts = [...toRender]
+			.sort(this._getSorted.bind(this))
+			.map(this._getEntMd.bind(this));
+
+		const out = [];
+		let charLimit = RendererMarkdown.CHARS_PER_PAGE;
+		for (let i = 0; i < parts.length; ++i) {
+			const part = parts[i];
+			out.push(part);
+
+			if (i < parts.length - 1) {
+				if ((charLimit -= part.length) < 0) {
+					if (RendererMarkdown.getSetting("isAddPageBreaks")) out.push("", "\\pagebreak", "");
+					charLimit = RendererMarkdown.CHARS_PER_PAGE;
+				}
+			}
+		}
+
+		return out.join("\n\n");
+	}
+
+	_$getControlsMarkdown () {
+		const $btnDownloadMarkdown = $(`<button class="btn btn-default btn-sm">Download as Markdown</button>`)
+			.click(() => DataUtil.userDownloadText(`${UrlUtil.getCurrentPage().replace(".html", "")}.md`, this._getVisibleAsMarkdown()));
+
+		const $btnCopyMarkdown = $(`<button class="btn btn-default btn-sm px-2" title="Copy Markdown to Clipboard"><span class="glyphicon glyphicon-copy"/></button>`)
+			.click(async () => {
+				await MiscUtil.pCopyTextToClipboard(this._getVisibleAsMarkdown());
+				JqueryUtil.showCopiedEffect($btnCopyMarkdown);
+			});
+
+		const $btnDownloadMarkdownSettings = $(`<button class="btn btn-default btn-sm px-2" title="Markdown Settings"><span class="glyphicon glyphicon-cog"/></button>`)
+			.click(async () => RendererMarkdown.pShowSettingsModal());
+
+		return $$`<div class="ve-flex-v-center btn-group ml-3">
+			${$btnDownloadMarkdown}
+			${$btnCopyMarkdown}
+			${$btnDownloadMarkdownSettings}
+		</div>`;
+	}
+
+	_getSorted (a, b) {
+		return SortUtil.ascSortLower(a.name, b.name);
+	}
+
+	_getEntMd (ent) {
+		return RendererMarkdown.get().render({type: "statblockInline", dataType: this._propMarkdown, data: ent}).trim();
+	}
 }
