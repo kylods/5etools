@@ -670,9 +670,10 @@ class AreaCheck extends DataTesterBase {
 				string: this._checkString.bind(this),
 			},
 		});
-		if (AreaCheck.errorSet.size) {
-			this._addMessage(`Errors in ${file}! See below:\n`);
 
+		if (AreaCheck.errorSet.size || AreaCheck.headerMap.__BAD?.length) this._addMessage(`Errors in ${file}! See below:\n`);
+
+		if (AreaCheck.errorSet.size) {
 			const toPrint = [...AreaCheck.errorSet].sort(SortUtil.ascSortLower);
 			toPrint.forEach(tp => this._addMessage(`${tp}\n`));
 		}
@@ -683,7 +684,7 @@ class AreaCheck extends DataTesterBase {
 	}
 }
 AreaCheck.errorSet = new Set();
-AreaCheck.fileMatcher = /\/(adventure-).*\.json/;
+AreaCheck.fileMatcher = /\/(adventure-|book-).*\.json/;
 
 class LootDataCheck extends GenericDataCheck {
 	static pRun () {
@@ -1177,7 +1178,7 @@ class HasFluffCheck extends GenericDataCheck {
 			.segregate(it => it.propFluff);
 
 		for (const {prop, propFluff, dataFluff, dataFluffUnmerged, data, page} of metasWithFluff) {
-			const fluffLookup = dataFluff[propFluff]
+			const fluffLookup = (dataFluff[propFluff] || [])
 				.mergeMap(flf => ({
 					[UrlUtil.URL_TO_HASH_BUILDER[page](flf)]: {
 						hasFluff: !!flf.entries,
@@ -1186,7 +1187,7 @@ class HasFluffCheck extends GenericDataCheck {
 				}));
 
 			// Tag parent fluff, so we can ignore e.g. "unused" fluff which is only used by `_copy`s
-			dataFluffUnmerged[propFluff].forEach(flfUm => {
+			(dataFluffUnmerged[propFluff] || []).forEach(flfUm => {
 				if (!flfUm._copy) return;
 				const hashParent = UrlUtil.URL_TO_HASH_BUILDER[page](flfUm._copy);
 				// Track fluff vs. images, as e.g. the child overwriting the images means we don't use the parent images

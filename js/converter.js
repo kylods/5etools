@@ -32,7 +32,7 @@ class BaseConverter extends BaseComponent {
 	 * @param [opts.hasPageNumbers] If the entity has page numbers.
 	 * @param [opts.titleCaseFields] Array of fields to be (optionally) title-cased.
 	 * @param [opts.hasSource] If the output entities can have a source field.
-	 * @param opts.prop The data prop for the output entrity.
+	 * @param opts.prop The data prop for the output entity.
 	 */
 	constructor (ui, opts) {
 		super();
@@ -309,14 +309,14 @@ class CreatureConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return CreatureConverter.SAMPLE_TEXT;
-			case "md": return CreatureConverter.SAMPLE_MARKDOWN;
+			case "txt": return CreatureConverter._SAMPLE_TEXT;
+			case "md": return CreatureConverter._SAMPLE_MARKDOWN;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region samples
-CreatureConverter.SAMPLE_TEXT =
+CreatureConverter._SAMPLE_TEXT =
 	`Mammon
 Huge fiend (devil), lawful evil
 Armor Class 20 (natural armor)
@@ -354,7 +354,7 @@ Mammon can take 3 legendary actions, choosing from the options below. Only one l
 Attack. Mammon makes one purse or molten coins attack.
 Make It Rain! Mammon casts gold and jewels into a 5-foot radius within 60 feet. One creature within 60 feet of the treasure that can see it must make a DC 24 Wisdom saving throw. On a failure, the creature must use its reaction to move its speed toward the trinkets, which vanish at the end of the turn.
 Deep Pockets (3 actions). Mammon recharges his Your Weight In Gold ability.`;
-CreatureConverter.SAMPLE_MARKDOWN =
+CreatureConverter._SAMPLE_MARKDOWN =
 	`___
 >## Lich
 >*Medium undead, any evil alignment*
@@ -448,13 +448,13 @@ class SpellConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return SpellConverter.SAMPLE_TEXT;
+			case "txt": return SpellConverter._SAMPLE_TEXT;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region sample
-SpellConverter.SAMPLE_TEXT = `Chromatic Orb
+SpellConverter._SAMPLE_TEXT = `Chromatic Orb
 1st-level evocation
 Casting Time: 1 action
 Range: 90 feet
@@ -503,13 +503,13 @@ class ItemConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return ItemConverter.SAMPLE_TEXT;
+			case "txt": return ItemConverter._SAMPLE_TEXT;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region sample
-ItemConverter.SAMPLE_TEXT = `Wreath of the Prism
+ItemConverter._SAMPLE_TEXT = `Wreath of the Prism
 Wondrous Item, legendary (requires attunement)
 This loop of golden thorns is inset with dozens of gems representing the five colors of Tiamat.
 Dormant
@@ -523,6 +523,92 @@ Exalted
 Once the Wreath of the Prism reaches an exalted state, it gains the following benefits:
 • You can affect creatures of challenge rating 15 or lower with the wreath.
 • The save DC of the wreath’s spell increases to 17.`;
+// endregion
+
+class EntryConverter extends BaseConverter {
+	constructor (ui) {
+		super(
+			ui,
+			{
+				converterId: "Generic",
+				canSaveLocal: false,
+				modes: ["md"],
+				hasPageNumbers: false,
+				hasSource: false,
+			},
+		);
+	}
+
+	_renderSidebar (parent, $wrpSidebar) {
+		$wrpSidebar.empty();
+	}
+
+	handleParse (input, cbOutput) {
+		switch (this._state.mode) {
+			case "md": return cbOutput(MarkdownConverter.getEntries(input));
+			default: throw new Error(`Unimplemented!`);
+		}
+	}
+
+	_getSample (format) {
+		switch (format) {
+			case "md": return EntryConverter.SAMPLE_MD;
+			default: throw new Error(`Unknown format "${format}"`);
+		}
+	}
+}
+// region sample
+EntryConverter.SAMPLE_MD = `# Introduction
+
+This book is written for the Dungeon Master. It contains a complete Dungeons & Dragons adventure, as well as descriptions for every creature and magic item that appears in the adventure. It also introduces the world of the Forgotten Realms, one of the game's most enduring settings, and it teaches you how to run a D&D game.
+
+The smaller book that accompanies this one (hereafter called "the rulebook") contains the rules you need to adjudicate situations that arise during the adventure.
+
+#### The Dungeon Master
+
+The Dungeon Master (DM) has a special role in the Dungeons & Dragons game.
+
+The DM is a **referee**. When it's not clear what ought to happen next, the DM decides how to apply the rules and keep the story going.
+
+
+> ##### Rules to Game By
+>
+>As the Dungeon Master, you are the final authority when it comes to rules questions or disputes. Here are some guidelines to help you arbitrate issues as they come up.
+>
+>- **When in doubt, make it up!** It's better to keep the game moving than to get bogged down in the rules.
+>- **It's not a competition.** The DM isn't competing against the player characters. You're there to run the monsters, referee the rules, and keep the story moving.
+>- **It's a shared story.** It's the group's story, so let the players contribute to the outcome through the actions of their characters. Dungeons & Dragons is about imagination and coming together to tell a story as a group. Let the players participate in the storytelling.
+>- **Be consistent.** If you decide that a rule works a certain way in one session, make sure it works that way the next time it comes into play.
+>- **Make sure everyone is involved.** Ensure every character has a chance to shine. If some players are reluctant to speak up, remember to ask them what their characters are doing.
+>- **Be fair.** Use your powers as Dungeon Master only for good. Treat the rules and the players in a fair and impartial manner.
+>- **Pay attention.** Make sure you look around the table occasionally to see if the game is going well. If everyone seems to be having fun, relax and keep going. If the fun is waning, it might be time for a break, or you can try to liven things up.
+
+#### Improvising Ability Checks
+
+The adventure often tells you what ability checks characters might try in a certain situation and the Difficulty Class (DC) of those checks. Sometimes adventurers try things that the adventure can't possibly anticipate. It's up to you to decide whether their attempts are successful. If it seems like anyone should have an easy time doing it, don't ask for an ability check; just tell the player what happens. Likewise, if there's no way anyone could accomplish the task, just tell the player it doesn't work.
+
+Otherwise, answer these three simple questions:
+
+- What kind of ability check?
+- How hard is it?
+- What's the result?
+
+Use the descriptions of the ability scores and their associated skills in the rulebook to help you decide what kind of ability check to use. Then determine how hard the task is so that you can set the DC for the check. The higher the DC, the more difficult the task. The easiest way to set a DC is to decide whether the task's difficulty is easy, moderate, or hard, and use these three DCs:
+
+- **Easy (DC 10)**. An easy task requires a minimal level of competence or a modicum of luck to accomplish.
+- **Moderate (DC 15)**. A moderate task requires a slightly higher level of competence to accomplish. A character with a combination of natural aptitude and specialized training can accomplish a moderate task more often than not.
+- **Hard (DC 20)**. Hard tasks include any effort that is beyond the capabilities of most people without aid or exceptional ability.
+
+#### Abbreviations
+
+The following abbreviations are used in this adventure:
+
+| Abbreviation          | Abbreviation           |
+|-----------------------|------------------------|
+| DC = Difficulty Class | XP = experience points |
+| gp = gold piece(s)    | pp = platinum piece(s) |
+| sp = silver piece(s)  | ep = electrum piece(s) |
+| cp = copper piece(s)  | -                      |`;
 // endregion
 
 class FeatConverter extends BaseConverter {
@@ -564,13 +650,13 @@ class FeatConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return FeatConverter.SAMPLE_TEXT;
+			case "txt": return FeatConverter._SAMPLE_TEXT;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region sample
-FeatConverter.SAMPLE_TEXT = `Metamagic Adept
+FeatConverter._SAMPLE_TEXT = `Metamagic Adept
 Prerequisite: Spellcasting or Pact Magic feature
 You’ve learned how to exert your will on your spells to alter how they function. You gain the following benefits:
 • Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20.
@@ -619,14 +705,14 @@ class RaceConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return RaceConverter.SAMPLE_TEXT;
+			case "txt": return RaceConverter._SAMPLE_TEXT;
 			case "md": return RaceConverter.SAMPLE_MD;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region sample
-RaceConverter.SAMPLE_TEXT = `Aasimar
+RaceConverter._SAMPLE_TEXT = `Aasimar
 
 Creature Type. You are a humanoid.
 
@@ -709,13 +795,13 @@ class BackgroundConverter extends BaseConverter {
 
 	_getSample (format) {
 		switch (format) {
-			case "txt": return BackgroundConverter.SAMPLE_TEXT;
+			case "txt": return BackgroundConverter._SAMPLE_TEXT;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
 }
 // region sample
-BackgroundConverter.SAMPLE_TEXT = `Giant Foundling 
+BackgroundConverter._SAMPLE_TEXT = `Giant Foundling
 Skill Proficiencies: Intimidation, Survival
 Languages: Giant and one other language of your choice
 Equipment: A backpack, a set of traveler’s clothes, a small stone or sprig that reminds you of home, and a pouch containing 10 gp
@@ -787,7 +873,7 @@ class TableConverter extends BaseConverter {
 	_getSample (format) {
 		switch (format) {
 			case "html": return TableConverter.SAMPLE_HTML;
-			case "md": return TableConverter.SAMPLE_MARKDOWN;
+			case "md": return TableConverter._SAMPLE_MARKDOWN;
 			default: throw new Error(`Unknown format "${format}"`);
 		}
 	}
@@ -830,7 +916,7 @@ TableConverter.SAMPLE_HTML =
     </tr>
   </tbody>
 </table>`;
-TableConverter.SAMPLE_MARKDOWN =
+TableConverter._SAMPLE_MARKDOWN =
 	`| Character Level | Low Magic Campaign                                                                | Standard Campaign                                                                                | High Magic Campaign                                                                                                     |
 |-----------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | 1st–4th         | Normal starting equipment                                                         | Normal starting equipment                                                                        | Normal starting equipment                                                                                               |
@@ -910,117 +996,139 @@ class ConverterUi extends BaseComponent {
 			JqueryUtil.doToast({type: "warning", content: "Enabled editing. Note that edits will be overwritten as you parse new stat blocks."});
 		});
 
-		const $btnSaveLocal = $(`#save_local`).click(async () => {
-			const output = this._outText;
+		$(`#preview`)
+			.on("click", async evt => {
+				const metaCurr = this._getCurrentEntities();
 
-			if (!(output || "").trim()) {
+				if (!metaCurr?.entities?.length) return JqueryUtil.doToast({content: "Nothing to preview!", type: "warning"});
+				if (metaCurr.error) return JqueryUtil.doToast({content: `Current output was not valid JSON!`, type: "danger"});
+
+				const entries = !this.activeConverter.prop
+					? metaCurr.entities.flat()
+					: metaCurr.entities
+						.map(ent => {
+							// Handle nameless/sourceless entities (e.g. tables)
+							if (!ent.name) ent.name = "(Unnamed)";
+							if (!ent.source) ent.source = VeCt.STR_GENERIC;
+
+							return {
+								type: "statblockInline",
+								dataType: this.activeConverter.prop,
+								data: ent,
+							};
+						});
+
+				Renderer.hover.getShowWindow(
+					Renderer.hover.$getHoverContent_generic({
+						type: "entries",
+						entries,
+					}),
+					Renderer.hover.getWindowPositionFromEvent(evt),
+					{
+						title: "Preview",
+						isPermanent: true,
+					},
+				);
+			});
+
+		const $btnSaveLocal = $(`#save_local`).click(async () => {
+			const metaCurr = this._getCurrentEntities();
+
+			if (!metaCurr?.entities?.length) return JqueryUtil.doToast({content: "Nothing to save!", type: "warning"});
+			if (metaCurr.error) return JqueryUtil.doToast({content: `Current output was not valid JSON!`, type: "danger"});
+
+			const prop = this.activeConverter.prop;
+
+			const invalidSources = metaCurr.entities.map(it => !it.source || !BrewUtil2.hasSourceJson(it.source) ? (it.name || it.caption || "(Unnamed)").trim() : false).filter(Boolean);
+			if (invalidSources.length) {
+				JqueryUtil.doToast({
+					content: `One or more entries have missing or unknown sources: ${invalidSources.join(", ")}`,
+					type: "danger",
+				});
+				return;
+			}
+
+			const brewDocEditable = await BrewUtil2.pGetEditableBrewDoc();
+			const uneditableSources = metaCurr.entities
+				.filter(ent => !(brewDocEditable?.body?._meta?.sources || []).some(src => src.json === ent.source))
+				.map(ent => ent.source);
+			if (uneditableSources.length) {
+				JqueryUtil.doToast({
+					content: `One or more entries have sources which belong to non-editable homebrew: ${uneditableSources.join(", ")}`,
+					type: "danger",
+				});
+				return;
+			}
+
+			// ignore duplicates
+			const _dupes = {};
+			const dupes = [];
+			const dedupedEntries = metaCurr.entities
+				.map(it => {
+					const lSource = it.source.toLowerCase();
+					const lName = it.name.toLowerCase();
+					_dupes[lSource] = _dupes[lSource] || {};
+					if (_dupes[lSource][lName]) {
+						dupes.push(it.name);
+						return null;
+					} else {
+						_dupes[lSource][lName] = true;
+						return it;
+					}
+				})
+				.filter(Boolean);
+
+			if (dupes.length) {
+				JqueryUtil.doToast({
+					type: "warning",
+					content: `Ignored ${dupes.length} duplicate entr${dupes.length === 1 ? "y" : "ies"}`,
+				});
+			}
+
+			if (!dedupedEntries.length) {
 				return JqueryUtil.doToast({
 					content: "Nothing to save!",
 					type: "warning",
 				});
 			}
 
-			try {
-				const prop = this.activeConverter.prop;
-				const entries = JSON.parse(`[${output}]`);
+			// handle overwrites
+			const brewDoc = await BrewUtil2.pGetOrCreateEditableBrewDoc();
+			const overwriteMeta = dedupedEntries
+				.map(it => {
+					if (!brewDoc?.body?.[prop]) return {entry: it, isOverwrite: false};
 
-				const invalidSources = entries.map(it => !it.source || !BrewUtil2.hasSourceJson(it.source) ? (it.name || it.caption || "(Unnamed)").trim() : false).filter(Boolean);
-				if (invalidSources.length) {
-					JqueryUtil.doToast({
-						content: `One or more entries have missing or unknown sources: ${invalidSources.join(", ")}`,
-						type: "danger",
-					});
-					return;
-				}
+					const ix = brewDoc.body[prop].findIndex(bru => bru.name.toLowerCase() === it.name.toLowerCase() && bru.source.toLowerCase() === it.source.toLowerCase());
+					if (!~ix) return {entry: it, isOverwrite: false};
 
-				const brewDocEditable = await BrewUtil2.pGetEditableBrewDoc();
-				const uneditableSources = entries
-					.filter(ent => !(brewDocEditable?.body?._meta?.sources || []).some(src => src.json === ent.source))
-					.map(ent => ent.source);
-				if (uneditableSources.length) {
-					JqueryUtil.doToast({
-						content: `One or more entries have sources which belong to non-editable homebrew: ${uneditableSources.join(", ")}`,
-						type: "danger",
-					});
-					return;
-				}
+					return {
+						isOverwrite: true,
+						ix,
+						entry: it,
+					};
+				})
+				.filter(Boolean);
 
-				// ignore duplicates
-				const _dupes = {};
-				const dupes = [];
-				const dedupedEntries = entries
-					.map(it => {
-						const lSource = it.source.toLowerCase();
-						const lName = it.name.toLowerCase();
-						_dupes[lSource] = _dupes[lSource] || {};
-						if (_dupes[lSource][lName]) {
-							dupes.push(it.name);
-							return null;
-						} else {
-							_dupes[lSource][lName] = true;
-							return it;
-						}
-					})
-					.filter(Boolean);
-
-				if (dupes.length) {
-					JqueryUtil.doToast({
-						type: "warning",
-						content: `Ignored ${dupes.length} duplicate entr${dupes.length === 1 ? "y" : "ies"}`,
-					});
-				}
-
-				if (!dedupedEntries.length) {
-					return JqueryUtil.doToast({
-						content: "Nothing to save!",
-						type: "warning",
-					});
-				}
-
-				// handle overwrites
-				const brewDoc = await BrewUtil2.pGetOrCreateEditableBrewDoc();
-				const overwriteMeta = dedupedEntries
-					.map(it => {
-						if (!brewDoc?.body?.[prop]) return {entry: it, isOverwrite: false};
-
-						const ix = brewDoc.body[prop].findIndex(bru => bru.name.toLowerCase() === it.name.toLowerCase() && bru.source.toLowerCase() === it.source.toLowerCase());
-						if (!~ix) return {entry: it, isOverwrite: false};
-
-						return {
-							isOverwrite: true,
-							ix,
-							entry: it,
-						};
-					})
-					.filter(Boolean);
-
-				const willOverwrite = overwriteMeta.map(it => it.isOverwrite).filter(Boolean);
-				if (
-					willOverwrite.length
-					&& !await InputUiUtil.pGetUserBoolean({title: "Overwrite Entries", htmlDescription: `This will overwrite ${willOverwrite.length} entr${willOverwrite.length === 1 ? "y" : "ies"}. Are you sure?`, textYes: "Yes", textNo: "Cancel"})
-				) {
-					return;
-				}
-
-				const cpyBrewDoc = MiscUtil.copy(brewDoc);
-				overwriteMeta.forEach(meta => {
-					if (meta.isOverwrite) return cpyBrewDoc.body[prop][meta.ix] = MiscUtil.copy(meta.entry);
-					(cpyBrewDoc.body[prop] = cpyBrewDoc.body[prop] || []).push(MiscUtil.copy(meta.entry));
-				});
-
-				await BrewUtil2.pSetEditableBrewDoc(cpyBrewDoc);
-
-				JqueryUtil.doToast({
-					type: "success",
-					content: `Saved!`,
-				});
-			} catch (e) {
-				JqueryUtil.doToast({
-					content: `Current output was not valid JSON!`,
-					type: "danger",
-				});
-				setTimeout(() => { throw e; });
+			const willOverwrite = overwriteMeta.map(it => it.isOverwrite).filter(Boolean);
+			if (
+				willOverwrite.length
+				&& !await InputUiUtil.pGetUserBoolean({title: "Overwrite Entries", htmlDescription: `This will overwrite ${willOverwrite.length} entr${willOverwrite.length === 1 ? "y" : "ies"}. Are you sure?`, textYes: "Yes", textNo: "Cancel"})
+			) {
+				return;
 			}
+
+			const cpyBrewDoc = MiscUtil.copy(brewDoc);
+			overwriteMeta.forEach(meta => {
+				if (meta.isOverwrite) return cpyBrewDoc.body[prop][meta.ix] = MiscUtil.copy(meta.entry);
+				(cpyBrewDoc.body[prop] = cpyBrewDoc.body[prop] || []).push(MiscUtil.copy(meta.entry));
+			});
+
+			await BrewUtil2.pSetEditableBrewDoc(cpyBrewDoc);
+
+			JqueryUtil.doToast({
+				type: "success",
+				content: `Saved!`,
+			});
 		});
 		const hkConverter = () => {
 			$btnSaveLocal.toggleClass("hidden", !this.activeConverter.canSaveLocal);
@@ -1029,26 +1137,20 @@ class ConverterUi extends BaseComponent {
 		hkConverter();
 
 		$(`#btn-output-download`).click(() => {
-			const output = this._outText;
-			if (!output || !output.trim()) {
-				return JqueryUtil.doToast({
-					content: "Nothing to download!",
-					type: "danger",
-				});
-			}
+			const metaCurr = this._getCurrentEntities();
 
-			try {
-				const prop = this.activeConverter.prop;
-				const out = {[prop]: JSON.parse(`[${output}]`)};
-				DataUtil.userDownload(`converter-output`, out);
-			} catch (e) {
+			if (!metaCurr?.entities?.length) return JqueryUtil.doToast({content: "Nothing to download!", type: "warning"});
+			if (metaCurr.error) {
 				JqueryUtil.doToast({
 					content: `Current output was not valid JSON. Downloading as <span class="code">.txt</span> instead.`,
 					type: "warning",
 				});
-				DataUtil.userDownloadText(`converter-output.txt`, output);
-				setTimeout(() => { throw e; });
+				DataUtil.userDownloadText(`converter-output.txt`, metaCurr.text);
+				return;
 			}
+
+			const out = {[this.activeConverter.prop]: metaCurr.entities};
+			DataUtil.userDownload(`converter-output`, out);
 		});
 
 		$(`#btn-output-copy`).click(async evt => {
@@ -1118,6 +1220,18 @@ class ConverterUi extends BaseComponent {
 		window.dispatchEvent(new Event("toolsLoaded"));
 	}
 
+	_getCurrentEntities () {
+		const output = this._outText;
+
+		if (!(output || "").trim()) return null;
+
+		try {
+			return {entities: JSON.parse(`[${output}]`)};
+		} catch (e) {
+			return {error: e.message, text: output.trim()};
+		}
+	}
+
 	initSideMenu () {
 		const $mnu = $(`.sidemenu`);
 
@@ -1181,7 +1295,7 @@ class ConverterUi extends BaseComponent {
 		if (append) {
 			const strs = [asCleanString, this._outText];
 			if (this._state.appendPrependMode === "prepend") strs.reverse();
-			this._outText = strs.join(",\n");
+			this._outText = strs.map(it => it.trimEnd()).join(",\n");
 			this._state.hasAppended = true;
 		} else {
 			this._outText = asCleanString;
@@ -1245,6 +1359,7 @@ async function doPageInit () {
 	const backgroundConverter = new BackgroundConverter(ui);
 	const spellConverter = new SpellConverter(ui);
 	const tableConverter = new TableConverter(ui);
+	const entryConverter = new EntryConverter(ui);
 
 	ui.converters = {
 		[creatureConverter.converterId]: creatureConverter,
@@ -1254,6 +1369,7 @@ async function doPageInit () {
 		[backgroundConverter.converterId]: backgroundConverter,
 		[featConverter.converterId]: featConverter,
 		[tableConverter.converterId]: tableConverter,
+		[entryConverter.converterId]: entryConverter,
 	};
 
 	return ui.pInit();

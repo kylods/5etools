@@ -314,6 +314,7 @@
 				"MW",
 				"RCH"
 			],
+			"hasToken": true,
 			"hasFluffImages": true
 		},
 		{
@@ -694,6 +695,9 @@
 			"otherSources": [
 				{
 					"source": "PaBTSO"
+				},
+				{
+					"source": "BMT"
 				}
 			],
 			"_copy": {

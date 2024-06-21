@@ -550,6 +550,9 @@ class _DataLoaderCache {
 	}
 
 	_set_getPartition (ent) {
+		if (ent.adventure) return this._set_getPartition_fromSource(SourceUtil.getEntitySource(ent.adventure));
+		if (ent.book) return this._set_getPartition_fromSource(SourceUtil.getEntitySource(ent.book));
+
 		if (ent.__prop !== "item" || ent._category !== "Specific Variant") return this._set_getPartition_fromSource(SourceUtil.getEntitySource(ent));
 
 		// "Specific Variant" items have a dual source. For the purposes of partitioning:
@@ -888,6 +891,14 @@ class _DataTypeLoaderConditionDiseaseFluff extends _DataTypeLoaderSingleSource {
 	static IS_FLUFF = true;
 
 	_filename = "fluff-conditionsdiseases.json";
+}
+
+class _DataTypeLoaderTrapHazardFluff extends _DataTypeLoaderSingleSource {
+	static PROPS = ["trapFluff", "hazardFluff"];
+	static PAGE = UrlUtil.PG_TRAPS_HAZARDS;
+	static IS_FLUFF = true;
+
+	_filename = "fluff-trapshazards.json";
 }
 
 class _DataTypeLoaderPredefined extends _DataTypeLoader {
@@ -1699,6 +1710,7 @@ class DataLoader {
 		_DataTypeLoaderRecipeFluff.register({fnRegister});
 
 		_DataTypeLoaderConditionDiseaseFluff.register({fnRegister});
+		_DataTypeLoaderTrapHazardFluff.register({fnRegister});
 		// endregion
 	}
 

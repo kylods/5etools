@@ -381,6 +381,7 @@ class RendererMarkdown {
 
 	_renderSpellcasting (entry, textStack, meta, options) {
 		const toRender = this._renderSpellcasting_getEntries(entry);
+		if (!toRender?.[0].entries?.length) return;
 		this._recursiveRender({type: "entries", entries: toRender}, textStack, meta, {prefix: RendererMarkdown._getNextPrefix(options), suffix: "\n"});
 	}
 
@@ -563,6 +564,7 @@ class RendererMarkdown {
 	}
 
 	_renderGallery (entry, textStack, meta, options) {
+		if (entry.name) textStack[0] += `##### ${entry.name}\n`;
 		const len = entry.images.length;
 		for (let i = 0; i < len; ++i) {
 			const img = MiscUtil.copyFast(entry.images[i]);
@@ -911,7 +913,7 @@ RendererMarkdown.monster = class {
 		const damResPart = mon.resist ? `\n>- **Damage Resistances** ${Parser.getFullImmRes(mon.resist)}` : "";
 		const damImmPart = mon.immune ? `\n>- **Damage Immunities** ${Parser.getFullImmRes(mon.immune)}` : "";
 		const condImmPart = mon.conditionImmune ? `\n>- **Condition Immunities** ${Parser.getFullCondImm(mon.conditionImmune, {isPlainText: true})}` : "";
-		const sensePart = !opts.isHideSenses ? `\n>- **Senses** ${mon.senses ? `${Renderer.monster.getRenderedSenses(mon.senses, true)}, ` : ""}passive Perception ${mon.passive || "\u2014"}` : "";
+		const sensePart = !opts.isHideSenses ? `\n>- **Senses** ${mon.senses ? `${Renderer.utils.getRenderedSenses(mon.senses, true)}, ` : ""}passive Perception ${mon.passive || "\u2014"}` : "";
 		const languagePart = !opts.isHideLanguages ? `\n>- **Languages** ${Renderer.monster.getRenderedLanguages(mon.languages)}` : "";
 
 		const fnGetSpellTraits = RendererMarkdown.monster.getSpellcastingRenderedTraits.bind(RendererMarkdown.monster, meta);
@@ -1071,7 +1073,9 @@ ${mon.pbNote || Parser.crToNumber(mon.cr) < VeCt.CR_CUSTOM ? `>- **Proficiency B
 			entry.type = entry.type || "spellcasting";
 			const renderStack = [""];
 			renderer._recursiveRender(entry, renderStack, meta, {prefix: ">"});
-			out.push({name: entry.name, rendered: renderStack.join("")});
+			const rendered = renderStack.join("");
+			if (!rendered.length) return;
+			out.push({name: entry.name, rendered});
 		});
 		meta.depth = cacheDepth;
 		return out;
@@ -1373,7 +1377,10 @@ RendererMarkdown.race = class {
 RendererMarkdown.feat = class {
 	static getCompactRenderedString (ent, opts = {}) {
 		const entries = [
-			RendererMarkdown.generic.getRenderedPrerequisite(ent),
+			Renderer.feat.getJoinedCategoryPrerequisites(
+				ent.category,
+				RendererMarkdown.generic.getRenderedPrerequisite(ent),
+			),
 			Renderer.utils.getRepeatableEntry(ent),
 			Renderer.feat.getFeatRendereableEntriesMeta(ent)?.entryMain,
 		]
@@ -1873,7 +1880,7 @@ RendererMarkdown.generic = class {
 
 	static getRenderedPrerequisite (ent) {
 		const out = Renderer.utils.prerequisite.getHtml(ent.prerequisite, {isTextOnly: true, isSkipPrefix: true});
-		return out ? `**Prerequisite:** ${out}` : "";
+		return out ? `Prerequisite: ${out}` : "";
 	}
 };
 

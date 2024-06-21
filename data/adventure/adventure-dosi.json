@@ -144,7 +144,7 @@
 											"title": "Map 1: Stormwreck Isle",
 											"width": 1700,
 											"height": 1214,
-											"id": "0cd",
+											"id": "0ef",
 											"credit": "Mike Schley"
 										},
 										{
@@ -166,7 +166,7 @@
 											"width": 1700,
 											"height": 1214,
 											"mapParent": {
-												"id": "0cd"
+												"id": "0ef"
 											},
 											"credit": "Mike Schley"
 										}
@@ -640,7 +640,7 @@
 											"title": "Map 2: Dragons Rest",
 											"width": 1700,
 											"height": 1214,
-											"id": "0ce",
+											"id": "0f0",
 											"mapRegions": [
 												{
 													"area": "022",
@@ -1644,7 +1644,7 @@
 											"width": 1700,
 											"height": 1214,
 											"mapParent": {
-												"id": "0ce"
+												"id": "0f0"
 											},
 											"credit": "Mike Schley"
 										}
@@ -2050,7 +2050,7 @@
 					},
 					"width": 1700,
 					"height": 1099,
-					"credit": "Linda Lithen"
+					"credit": "Linda Lithén"
 				},
 				"This chapter assumes the characters come here before going to the wreck of {@i Compass Rose}, and they are still 1st level. It also includes simple instructions to scale up the danger in combat encounters if the characters complete chapter 3, \"{@adventure Cursed Shipwreck|DoSI|3},\" before coming here, and are now 2nd level.",
 				{
@@ -2251,7 +2251,7 @@
 											"title": "Map 3: Seagrow Caves",
 											"width": 1700,
 											"height": 1214,
-											"id": "0cf",
+											"id": "0f1",
 											"mapRegions": [
 												{
 													"area": "058",
@@ -4624,7 +4624,7 @@
 											"width": 1700,
 											"height": 1214,
 											"mapParent": {
-												"id": "0cf"
+												"id": "0f1"
 											},
 											"credit": "Mike Schley"
 										}
@@ -4892,7 +4892,7 @@
 					},
 					"width": 1700,
 					"height": 1230,
-					"credit": "Linda Lithen"
+					"credit": "Linda Lithén"
 				},
 				"This chapter assumes the characters come here before Seagrow Caves and are still 1st level. It also includes instructions to scale up the danger in combat encounters if the characters complete chapter 2, \"{@adventure Seagrow Caves|DoSI|2},\" before coming here and are now 2nd level.",
 				{
@@ -4993,7 +4993,7 @@
 											"title": "Map 4: The Wreck of Compass Rose",
 											"width": 1700,
 											"height": 1214,
-											"id": "0d0",
+											"id": "0f2",
 											"mapRegions": [
 												{
 													"area": "080",
@@ -5581,7 +5581,7 @@
 											"width": 1700,
 											"height": 1214,
 											"mapParent": {
-												"id": "0d0"
+												"id": "0f2"
 											},
 											"credit": "Mike Schley"
 										}
@@ -6178,7 +6178,7 @@
 											"title": "Map 5: Clifftop Observatory",
 											"width": 1700,
 											"height": 1214,
-											"id": "0d1",
+											"id": "0f3",
 											"mapRegions": [
 												{
 													"area": "0ab",
@@ -6727,7 +6727,7 @@
 											"width": 1700,
 											"height": 1214,
 											"mapParent": {
-												"id": "0d1"
+												"id": "0f3"
 											},
 											"credit": "Mike Schley"
 										}
